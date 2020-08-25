@@ -56,15 +56,11 @@ def plot2D(save_path, n_episodes, *y):
     # The position of the bars on the x-axis
     barWidth = 0.35
     r = np.arange(n_episodes)  # the x locations for the groups
-
     # Get values from the group and categories
     x = [i for i in range(n_episodes)]
     correct = y[0][0]
     wrong = y[0][1]
     timeout = y[0][2]
-    # add colors
-    #colors = ['#FF9999', '#00BFFF', '#C1FFC1', '#CAE1FF', '#FFDEAD']
-
     # plot bars
     plt.figure(figsize=(10, 7))
     plt.bar(r, correct,  edgecolor='white', width=barWidth, label="correct")
@@ -104,31 +100,58 @@ def average_prob(ref_cpds_table, current_cpds_table):
             res_cpds_table[elem1][elem2] = (ref_cpds_table[elem1][elem2]+current_cpds_table[elem1][elem2])/2
     return res_cpds_table
 
-def generate_user_action(actions_prob):
+def generate_user_action(actions_prob_from_BN, actions_prob_from_user):
     '''
     Select one of the actions according to the actions_prob
     Args:
-        actions_prob: the result of the query to the BN
+        actions_prob_from_BN: the probability of the Persona based on the BN to make a correct move, wrong move, timeout
+        actions_prob_from_user: the probability of the user to make a correct move, wrong move, timeout
+        N.B: while actions_prob_from_BN is the probability estimated from the persona BN, actions_prob_from_user
+        is the real probability of the user.
     Return:
         the id of the selected action
+    N.B:
     '''
-    action_id = 0
-    correct_action = actions_prob[0]
-    wrong_action = actions_prob[1]
-    timeout = actions_prob[2]
-    rnd_val = random.random()
-    if rnd_val<=correct_action:
+    action_id = None
+    correct_action_from_BN = actions_prob_from_BN[0]
+    wrong_action_from_BN = actions_prob_from_BN[1]
+    timeout_action_from_BN = actions_prob_from_BN[2]
+    correct_action_from_user = actions_prob_from_user[0]
+    wrong_action_from_user = actions_prob_from_user[1]
+    timeout_action_from_user = actions_prob_from_user[2]
+
+    #if user_prob is lower than the correct action prob then is the correct one
+    if correct_action_from_user<=correct_action_from_BN:
         action_id = 0
-    elif rnd_val>correct_action \
-        and rnd_val<correct_action+wrong_action:
+    #if rnd is larger than the correct action prob and lower than wrong
+    #  action prob then is the wrong one
+    elif correct_action_from_user>correct_action_from_BN \
+        and correct_action_from_user+wrong_action_from_user<correct_action_from_BN+wrong_action_from_BN:
         action_id = 1
+    #timeout
     else:
         action_id = 2
     return action_id
 
 
-def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory, attention, reactivity, epochs=50, task_complexity=5, non_stochastic=False):
-    #metrics we need in order to compute the afterwords the belief
+def simulation(robot_assistance_vect, robot_feedback_vect, real_user_actions_prob, persona_cpds, memory, attention, reactivity, epochs=50, task_complexity=5):
+    '''
+    This function computes the entire simulation for #epochs
+    Args:
+        robot_assistance_vect: the robot's levels of assistance (might be included directly in this function)
+        robot_feedback_vect: the robot's feedback (might be included directly in this function)
+        real_user_actions_prob: the probability of performing one of the actions for a real sim user
+        persona_cpds: the cpds associated to the persona model
+        memory: the memory level
+        attention: the attention level
+        reactivity: the reactivity level
+        epochs: the number of simulations
+        task_complexity: the number of tokens to sort
+    Return:
+
+    '''
+
+    #metrics we need, in order to compute afterwords the belief
     '''
     CPD 0: for each attempt 1 to 4 store the number of correct, wrong and timeout
     '''
@@ -152,7 +175,6 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
     n_wrong_per_episode = [0]*epochs
     n_timeout_per_episode = [0]*epochs
 
-
     for e in range(epochs):
         '''Simulation framework'''
         #counters
@@ -163,20 +185,21 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
         wrong_move_counter = 0
         timeout_counter = 0
 
-        while(task_evolution<=task_complexity):
-            #these, if then else are necessary to classify the task game state into beg, mid, end
+        while(task_evolution<task_complexity):
+            #if then else are necessary to classify the task game state into beg, mid, end
             if task_evolution>=0 and task_evolution<=2:
                 game_state_counter = 0
             elif task_evolution>=3 and task_evolution<=4:
                 game_state_counter = 1
             else:
                 game_state_counter = 2
-            #select robot assistance
+            #select robot assistance (replace it with RL or IRL algorithm)
             robot_assistance_action = random.randint(min(robot_assistance_vect), max(robot_assistance_vect))
-            #select robot feedback
+            #select robot feedback (replace it with RL or IRL algorithm)
             robot_feedback_action = random.randint(min(robot_feedback_vect), max(robot_feedback_vect))
 
             print("robot_assistance {}, attempt {}, game {}, robot_feedback {}".format(robot_assistance_action, attempt_counter, game_state_counter, robot_feedback_action))
+            #call to the bnlearn library to get the user_action probability based on the Persona
             query = bnlearn.inference.fit(persona_cpds, variables=['user_action'], evidence={'robot_assistance': robot_assistance_action,
                                                                                       'attempt': attempt_counter,
                                                                                       'game_state': game_state_counter,
@@ -185,8 +208,10 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
                                                                                       'attention': attention,
                                                                                       'reactivity': reactivity
                                                                                       })
-            #generate a random number and trigger one of the three possible action
-            user_action = generate_user_action(query.values)#np.argmax(query.values, axis=0)
+            user_actions_prob_from_BN = query.values
+
+            #compare the real user with the estimated Persona and returns a user action (0, 1, 2)
+            user_action = generate_user_action(user_actions_prob_from_BN, real_user_actions_prob)
 
             #updates counters for plots
             robot_assistance_per_feedback[robot_feedback_action][robot_assistance_action] += 1
@@ -208,20 +233,18 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
             elif user_action == 2 and attempt_counter<3:
                 attempt_counter += 1
                 wrong_move_counter += 1
-            # the robot or therapist makes the correct move on the patient behalf
+            # the robot or therapist makes the correct move on the patient's behalf
             else:
                 attempt_counter = 0
                 task_evolution += 1
                 timeout_counter += 1
 
         print("task_evolution {}, attempt_counter {}, timeout_counter {}".format(task_evolution, iter_counter, timeout_counter))
-
         print("robot_assistance_per_feedback {}".format(robot_assistance_per_feedback))
         print("attempt_counter_per_action {}".format(attempt_counter_per_action))
         print("game_state_counter_per_action {}".format(game_state_counter_per_action))
         print("robot_feedback_per_action {}".format(robot_feedback_per_action))
         print("iter {}, correct {}, wrong {}, timeout {}".format(iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
-
         print("correct_move {}, wrong_move {}, timeout {}".format(correct_move_counter, wrong_move_counter, timeout_counter))
 
         #transform counters into probabilities
@@ -240,6 +263,7 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
         updated_prob_over_assistance_per_feedback = average_prob(np.transpose(persona_cpds['model'].cpds[5].values),
                                                              prob_over_assistance_per_feedback)
 
+        #dirty solution, hardcoded based on the .bif look at it to know the corresponding cpds
         persona_cpds['model'].cpds[0].values = np.transpose(updated_prob_over_attempt_per_action)
         persona_cpds['model'].cpds[2].values = np.transpose(updated_prob_over_game_per_action)
         persona_cpds['model'].cpds[6].values = np.transpose(updated_prob_over_feedback_per_action)
@@ -251,19 +275,20 @@ def simulation(robot_assistance_vect, robot_feedback_vect, persona_cpds, memory,
 
     return n_correct_per_episode, n_wrong_per_episode, n_timeout_per_episode
 
+#SIMULATION PARAMS
 robot_assistance = [i for i in range(Robot_Assistance.counter.value)]
 robot_feedback = [i for i in range(Robot_Feedback.counter.value)]
 epochs = 10
-#initialise memory, attention and reactivity varibles
-memory = 0; attention = 0; reactivity = 1;
-#run a simulation
+user_actions_prob = [0.2, 0.7, 0.1]
 persona_cpds = bnlearn.import_DAG('persona_model.bif')
 print("user_action -> attempt ", persona_cpds['model'].cpds[0].values)
 print("user_action -> game_state ", persona_cpds['model'].cpds[2].values)
 print("robot_feedback -> robot_assistance ", persona_cpds['model'].cpds[5].values)
 print("user_action -> reactivity, memory ", persona_cpds['model'].cpds[6].values)
+#initialise memory, attention and reactivity varibles
+memory = 0; attention = 0; reactivity = 1;
 
-results = simulation(robot_assistance, robot_feedback, persona_cpds, memory, attention, reactivity, epochs=10, task_complexity=5, non_stochastic=False)
+results = simulation(robot_assistance, robot_feedback, user_actions_prob, persona_cpds, memory, attention, reactivity, epochs=10, task_complexity=5)
 plot_path = "epoch_"+str(epochs)+"_memory_"+str(memory)+"_attention_"+str(attention)+"_reactivity_"+str(reactivity)+".jpg"
 plot2D(plot_path, epochs, results)
 
