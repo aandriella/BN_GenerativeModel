@@ -56,8 +56,8 @@ probability ( robot_feedback ) {
   table 0.5, 0.5;
 }
 probability ( reactivity | attention ) {
-  (low) 0.7, 0.2, 0.1;
-  (medium)  0.2, 0.5, 0.3;
+  (low) 0.5, 0.4, 0.1;
+  (medium)  0.3, 0.5, 0.2;
   (high)  0.1, 0.2, 0.7;
 }
 #CPDS 7
@@ -74,15 +74,15 @@ probability (user_action | memory, reactivity) {
 }
 #CPDS 5
 probability (robot_feedback | user_action) {
-  (correct) 0.8, 0.2;
+  (correct) 0.5, 0.5;
   (wrong) 0.5, 0.5;
-  (timeout) 0.2, 0.8;
+  (timeout) 0.5, 0.5;
 }
 #CPDS 6
 probability (robot_assistance | user_action) {
   (correct) 0.05 0.1 0.15 0.3 0.4;
-  (wrong) 0.4 0.3 0.2 0.05 0.05;
-  (timeout) 0.4 0.4 0.1 0.05 0.05;
+  (wrong) 0.4 0.2 0.2 0.1 0.1;
+  (timeout) 0.4 0.2 0.2 0.1 0.1;
 }
 #CPDS 2
 probability (game_state | user_action)  {
@@ -93,8 +93,8 @@ probability (game_state | user_action)  {
 #CPDS 0
 probability (attempt | user_action)  {
    (correct) 0.1, 0.2, 0.3, 0.4;
-   (wrong) 0.5, 0.3, 0.15, 0.05;
-   (timeout) 0.4, 0.3, 0.2, 0.1;
+   (wrong) 0.7, 0.2, 0.1, 0.0;
+   (timeout) 0.6, 0.3, 0.1, 0.0;
 }
 #CPDS 5
 probability (robot_assistance | robot_feedback) {
