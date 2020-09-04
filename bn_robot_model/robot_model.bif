@@ -1,0 +1,147 @@
+network robot_model {
+}
+
+%VARIABLES DEFINITION
+variable reactivity {
+  type discrete [3] {slow, medium, fast};
+}
+variable memory {
+  type discrete[3] {low, medium, high};
+}
+
+variable robot_assistance_feedback {
+  type discrete [ 10 ] { lev_0_no, lev_1_no, lev_2_no, lev_3_no, lev_4_no,
+                        lev_0_yes, lev_1_yes, lev_2_yes, lev_3_yes, lev_4_yes
+  };
+}
+variable attempt {
+  type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
+}
+variable game_state {
+  type discrete [ 3 ] { beg, mid, end };
+}
+
+variable user_capability {
+  type discrete [ 3 ] { very_mild, mild, severe };
+}
+
+%INDIVIDUAL PROBABILITIES DEFINITION
+probability ( robot_assistance_feedback ) {
+  table 0.1, 0.1, 0.1, 0.1, 0.1,
+        0.1, 0.1, 0.1, 0.1, 0.1;
+}
+probability ( game_state ) {
+  table 0.34, 0.33, 0.33;
+}
+probability ( attempt ) {
+  table 0.25, 0.25, 0.25, 0.25;
+}
+probability ( user_capability ) {
+  table 0.33, 0.33, 0.34;
+}
+#CPDS 4 #SPECIFICALLY FOR THE GIVEN PATIENT
+probability ( reactivity ) {
+  table 0.34, 0.33, 0.33;
+}
+#CPDS 3 #SPECIFICALLY FOR THE GIVEN PATIENT
+probability ( memory ) {
+  table 0.33, 0.33, 0.34;
+}
+
+
+#Conditional Probabilities
+
+#CPDS X (very_mild, mild, severe)
+probability (user_capability | memory, reactivity) {
+(low, slow)  0.1, 0.2, 0.7;
+(medium, slow)  0.2, 0.6, 0.2;
+(high, slow)  0.7, 0.2, 0.1;
+
+(low, medium)  0.1, 0.3, 0.6;
+(medium, medium)  0.3, 0.6, 0.1;
+(high, medium)  0.1, 0.4, 0.5;
+
+(low, fast)  0.3, 0.2, 0.5;
+(medium, fast)  0.7, 0.2, 0.1;
+(high, fast)  0.8, 0.1, 0.1;
+
+}
+#CPDS X
+probability (robot_assistance_feedback | user_capability, game_state, attempt) {
+  (very_mild, beg, att_1) 0.25, 0.25, 0.0, 0.0, 0.0,
+   0.25, 0.25, 0.0, 0.0, 0.0;
+  (mild, beg, att_1)  0.0, 0.05, 0.15, 0.15, 0.15,
+   0.0, 0.05, 0.15, 0.15, 0.15;
+  (severe, beg, att_1)  0.0, 0.0, 0.25, 0.15, 0.1,
+   0.0, 0.0, 0.25, 0.15, 0.1;
+  (very_mild, mid, att_1)  0.3, 0.2, 0.0, 0.0, 0.0,
+   0.3, 0.2, 0.0, 0.0, 0.0;
+  (mild, mid, att_1)  0.0, 0.1, 0.2, 0.1, 0.1,
+   0.0, 0.1, 0.2, 0.1, 0.1;
+  (severe, mid, att_1)   0.0, 0.0, 0.3, 0.1, 0.1,
+   0.0, 0.0, 0.3, 0.1, 0.1;
+  (very_mild, end, att_1)  0.45, 0.05, 0.0, 0.0, 0.0,
+   0.45, 0.05, 0.0, 0.0, 0.0;
+  (mild, end, att_1)  0.0, 0.15, 0.2, 0.1, 0.05,
+   0.0, 0.15, 0.2, 0.1, 0.05;
+  (severe, end, att_1)  0.0, 0.1, 0.2, 0.15, 0.05,
+   0.0, 0.1, 0.2, 0.15, 0.05;
+
+  (very_mild, beg, att_2) 0.30, 0.20, 0.0, 0.0, 0.0,
+   0.30, 0.20, 0.0, 0.0, 0.0;
+  (mild, beg, att_2)  0.0, 0.15, 0.2, 0.1, 0.05,
+   0.0, 0.15, 0.2, 0.1, 0.05;
+  (severe, beg, att_2)  0.0, 0.05, 0.25, 0.1, 0.1,
+   0.0, 0.05, 0.25, 0.1, 0.1;
+  (very_mild, mid, att_2)  0.4, 0.1, 0.0, 0.0, 0.0,
+   0.4, 0.1, 0.0, 0.0, 0.0;
+  (mild, mid, att_2)  0.0, 0.2, 0.2, 0.1, 0.0,
+   0.0, 0.2, 0.2, 0.1, 0.0;
+  (severe, mid, att_2)   0.0, 0.0, 0.2, 0.2, 0.1,
+   0.0, 0.0, 0.2, 0.2, 0.1;
+  (very_mild, end, att_2)  0.4, 0.1, 0.0, 0.0, 0.0,
+   0.45, 0.05, 0.0, 0.0, 0.0;
+  (mild, end, att_2)  0.0, 0.2, 0.15, 0.15, 0.0,
+   0.0, 0.2, 0.15, 0.15, 0.0;
+  (severe, end, att_2)  0.0, 0.05, 0.2, 0.2, 0.05,
+   0.0, 0.05, 0.2, 0.2, 0.05;
+
+  (very_mild, beg, att_3) 0.40, 0.10, 0.0, 0.0, 0.0,
+   0.40, 0.10, 0.0, 0.0, 0.0;
+  (mild, beg, att_3)  0.0, 0.10, 0.25, 0.1, 0.05,
+   0.0, 0.10, 0.25, 0.1, 0.05;
+  (severe, beg, att_3)  0.0, 0.05, 0.2, 0.2, 0.05,
+   0.0, 0.05, 0.2, 0.2, 0.05;
+  (very_mild, mid, att_3)  0.3, 0.1, 0.1, 0.0, 0.0,
+    0.3, 0.1, 0.1, 0.0, 0.0;
+  (mild, mid, att_3)  0.0, 0.2, 0.1, 0.1, 0.1,
+   0.0, 0.2, 0.1, 0.1, 0.1;
+  (severe, mid, att_3)   0.0, 0.1, 0.1, 0.15, 0.15,
+   0.0, 0.1, 0.1, 0.15, 0.15;
+  (very_mild, end, att_3)  0.45, 0.05, 0.0, 0.0, 0.0,
+   0.45, 0.05, 0.0, 0.0, 0.0;
+  (mild, end, att_3)  0.0, 0.15, 0.15, 0.2, 0.0,
+   0.0, 0.15, 0.15, 0.2, 0.0;
+  (severe, end, att_3)  0.0, 0.1, 0.1, 0.2, 0.1,
+   0.0, 0.1, 0.1, 0.2, 0.1;
+
+   (very_mild, beg, att_4) 0.40, 0.10, 0.0, 0.0, 0.0,
+   0.40, 0.10, 0.0, 0.0, 0.0;
+  (mild, beg, att_4)  0.0, 0.10, 0.25, 0.1, 0.05,
+   0.0, 0.10, 0.25, 0.1, 0.05;
+  (severe, beg, att_4)  0.0, 0.05, 0.2, 0.2, 0.05,
+   0.0, 0.05, 0.2, 0.2, 0.05;
+  (very_mild, mid, att_4)  0.3, 0.1, 0.1, 0.0, 0.0,
+    0.3, 0.1, 0.1, 0.0, 0.0;
+  (mild, mid, att_4)  0.0, 0.2, 0.1, 0.1, 0.1,
+   0.0, 0.2, 0.1, 0.1, 0.1;
+  (severe, mid, att_4)   0.0, 0.1, 0.1, 0.15, 0.15,
+   0.0, 0.1, 0.1, 0.15, 0.15;
+  (very_mild, end, att_4)  0.45, 0.05, 0.0, 0.0, 0.0,
+   0.45, 0.05, 0.0, 0.0, 0.0;
+  (mild, end, att_4)  0.0, 0.15, 0.15, 0.2, 0.0,
+   0.0, 0.15, 0.15, 0.2, 0.0;
+  (severe, end, att_4)  0.0, 0.1, 0.1, 0.2, 0.1,
+   0.0, 0.1, 0.1, 0.2, 0.1;
+
+}
