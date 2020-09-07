@@ -1,6 +1,5 @@
 import bnlearn
-import numpy as np
-import random
+import os
 #import classes and modules
 from bn_variables import Memory, Attention, Reactivity, Robot_Assistance, Robot_Feedback, Robot_Assistance_Feedback, User_Action, User_Capability, Game_State, Attempt
 import bn_functions
@@ -266,6 +265,8 @@ def simulation(user_bn_model, user_var_target, user_memory_name, user_memory_val
 #############################################################################
 #############################################################################
 
+
+
 #SIMULATION PARAMS
 robot_assistance = [i for i in range(Robot_Assistance.counter.value)]
 robot_feedback = [i for i in range(Robot_Feedback.counter.value)]
@@ -285,12 +286,17 @@ game_performance_per_episode, robot_assistance_per_episode = simulation(user_bn_
             user_reactivity_name="reactivity", user_reactivity_value=persona_reactivity,
            task_progress_name="game_state", game_attempt_name="attempt",
                  robot_assistance_name="robot_assistance", robot_feedback_name="robot_feedback",
+
            robot_bn_model=robot_cpds, robot_var_target=["robot_assistance_feedback"],
            other_user_bn_model=real_user_cpds, other_user_var_target=['user_action'],
                  other_user_memory_name="memory", other_user_memory_value=real_user_memory,
            other_user_attention_name="attention", other_user_attention_value=real_user_attention,
            other_user_reactivity_name="reactivity", other_user_reactivity_value=real_user_reactivity,
            epochs=epochs, task_complexity=5)
+
+plot_game_performance_path = ""
+plot_robot_assistance_path = ""
+
 if real_user_cpds != None:
     plot_game_performance_path = "game_performance_"+"_epoch_"+str(epochs)+"_real_user_memory_"+str(real_user_memory)+"_real_user_attention_"+str(real_user_attention)+"_real_user_reactivity_"+str(real_user_reactivity)+".jpg"
     plot_robot_assistance_path = "robot_assistance_"+"epoch_"+str(epochs)+"_real_user_memory_"+str(real_user_memory)+"_real_user_attention_"+str(real_user_attention)+"_real_user_reactivity_"+str(real_user_reactivity)+".jpg"
@@ -298,9 +304,20 @@ else:
     plot_game_performance_path = "game_performance_"+"epoch_" + str(epochs) + "_persona_memory_" + str(persona_memory) + "_persona_attention_" + str(persona_attention) + "_persona_reactivity_" + str(persona_reactivity) + ".jpg"
     plot_robot_assistance_path = "robot_assistance_"+"epoch_"+str(epochs)+"_persona_memory_"+str(persona_memory)+"_persona_attention_"+str(persona_attention)+"_persona_reactivity_"+str(persona_reactivity)+".jpg"
 
+dir_name = input("Please insert the name of the directory:")
+full_path = os.getcwd()+"/results/"+dir_name+"/"
+if not os.path.exists(full_path):
+  os.mkdir(full_path)
+  print("Directory ", full_path, " created.")
+else:
+  dir_name = input("The directory already exist please insert a new name:")
+  print("Directory ", full_path, " created.")
+  if os.path.exists(full_path):
+    assert("Directory already exists ... start again")
+    exit(0)
 
-utils.plot2D_game_performance(plot_game_performance_path, epochs, game_performance_per_episode)
-utils.plot2D_assistance("test.jpg", epochs, robot_assistance_per_episode)
+utils.plot2D_game_performance(full_path+plot_game_performance_path, epochs, game_performance_per_episode)
+utils.plot2D_assistance(full_path+plot_robot_assistance_path, epochs, robot_assistance_per_episode)
 #TODO
 '''
 - define a function that takes the state as input and return the user action and its reaction time
