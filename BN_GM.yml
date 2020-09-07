@@ -72,4 +72,3 @@ dependencies:
     - werkzeug==1.0.1
     - wget==3.2
 prefix: /Users/aandriella/opt/miniconda3/envs/env_BNLEARN
-
