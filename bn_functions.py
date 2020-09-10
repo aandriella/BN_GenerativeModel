@@ -154,3 +154,28 @@ def get_stochastic_action(actions_distr_prob):
     action_id = compute_distance(actions_distr_prob_scaled, rnd_val)
 
     return action_id
+
+def interpret_user_output(action_id):
+    user_action = 0
+    user_react_time = 0
+
+    if action_id == 0:
+        user_action = 0; user_react_time = 0
+    elif action_id == 1:
+        user_action = 1; user_react_time = 0
+    elif action_id == 2:
+        user_action = 2; user_react_time = 0
+    elif action_id == 3:
+        user_action = 0; user_react_time = 1
+    elif action_id == 4:
+        user_action = 1; user_react_time = 1
+    elif action_id == 5:
+        user_action = 2; user_react_time = 1
+    elif action_id == 6:
+        user_action = 0; user_react_time = 2
+    elif action_id == 7:
+        user_action = 1; user_react_time = 2
+    elif action_id == 8:
+        user_action = 2; user_react_time = 2
+
+    return user_action, user_react_time
