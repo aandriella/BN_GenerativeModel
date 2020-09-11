@@ -268,8 +268,8 @@ def simulation(user_bn_model, user_var_target, user_memory_name, user_memory_val
 
         user_bn_model = bn_functions.update_cpds_tables(user_bn_model, dynamic_variables)
         #reset counter??
-        robot_assistance_per_feedback = [[0 for i in range(Robot_Assistance.counter.value)] for j in
-                                         range(Robot_Feedback.counter.value)]
+        robot_assistance_per_action = [[0 for i in range(Robot_Assistance.counter.value)] for j in
+                                         range(User_Action.counter.value)]
         attempt_counter_per_action = [[0 for i in range(Attempt.counter.value)] for j in
                                       range(User_Action.counter.value)]
         game_state_counter_per_action = [[0 for i in range(Game_State.counter.value)] for j in
