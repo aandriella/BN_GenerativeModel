@@ -37,37 +37,23 @@ def plot2D_assistance(save_path, n_episodes, *y):
     # Get values from the group and categories
     x = [i for i in range(n_episodes)]
 
-    lev_0_no_feed = list(map(lambda x:x[0], y[0]))
-    lev_1_no_feed = list(map(lambda x:x[1], y[0]))
-    lev_2_no_feed = list(map(lambda x:x[2], y[0]))
-    lev_3_no_feed = list(map(lambda x:x[3], y[0]))
-    lev_4_no_feed = list(map(lambda x:x[4], y[0]))
-    lev_0_with_feed = list(map(lambda x:x[5], y[0]))
-    lev_1_with_feed = list(map(lambda x:x[6], y[0]))
-    lev_2_with_feed = list(map(lambda x:x[7], y[0]))
-    lev_3_with_feed = list(map(lambda x:x[8], y[0]))
-    lev_4_with_feed = list(map(lambda x:x[9], y[0]))
+    lev_0 = list(map(lambda x:x[0], y[0]))
+    lev_1 = list(map(lambda x:x[1], y[0]))
+    lev_2 = list(map(lambda x:x[2], y[0]))
+    lev_3 = list(map(lambda x:x[3], y[0]))
+    lev_4 = list(map(lambda x:x[4], y[0]))
 
     # plot bars
     plt.figure(figsize=(10, 7))
-    plt.bar(r, lev_0_no_feed, edgecolor='white', width=barWidth, label="lev_0_no_feed")
-    plt.bar(r, lev_1_no_feed, bottom=np.array(lev_0_no_feed), edgecolor='white', width=barWidth, label='lev_1_no_feed')
-    plt.bar(r, lev_2_no_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed), edgecolor='white',
-            width=barWidth, label='lev_2_no_feed')
-    plt.bar(r, lev_3_no_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed), edgecolor='white',
-            width=barWidth, label='lev_3_no_feed')
-    plt.bar(r, lev_4_no_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed), edgecolor='white',
-            width=barWidth, label='lev_4_no_feed')
-    plt.bar(r, lev_0_with_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed)+ np.array(lev_4_no_feed), edgecolor='white',
-            width=barWidth, label='lev_0_with_feed')
-    plt.bar(r, lev_1_with_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed)+ np.array(lev_4_no_feed)+ np.array(lev_0_with_feed), edgecolor='white',
-            width=barWidth, label='lev_1_with_feed')
-    plt.bar(r, lev_2_with_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed)+ np.array(lev_4_no_feed)+ np.array(lev_0_with_feed)+ np.array(lev_1_with_feed), edgecolor='white',
-            width=barWidth, label='lev_2_with_feed')
-    plt.bar(r, lev_3_with_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed)+ np.array(lev_4_no_feed)+ np.array(lev_0_with_feed)+ np.array(lev_1_with_feed)+ np.array(lev_2_with_feed), edgecolor='white',
-            width=barWidth, label='lev_3_with_feed')
-    plt.bar(r, lev_4_with_feed, bottom=np.array(lev_0_no_feed) + np.array(lev_1_no_feed)+ np.array(lev_2_no_feed)+ np.array(lev_3_no_feed)+ np.array(lev_4_no_feed)+ np.array(lev_0_with_feed)+ np.array(lev_1_with_feed)+ np.array(lev_2_with_feed)+ np.array(lev_3_with_feed), edgecolor='white',
-            width=barWidth, label='lev_4_with_feed')
+    plt.bar(r, lev_0, edgecolor='white', width=barWidth, label="lev_0")
+    plt.bar(r, lev_1, bottom=np.array(lev_0), edgecolor='white', width=barWidth, label='lev_1')
+    plt.bar(r, lev_2, bottom=np.array(lev_0) + np.array(lev_1), edgecolor='white',
+            width=barWidth, label='lev_2')
+    plt.bar(r, lev_3, bottom=np.array(lev_0) + np.array(lev_1)+ np.array(lev_2), edgecolor='white',
+            width=barWidth, label='lev_3')
+    plt.bar(r, lev_4, bottom=np.array(lev_0) + np.array(lev_1)+ np.array(lev_2)+ np.array(lev_3), edgecolor='white',
+            width=barWidth, label='lev_4')
+
 
     plt.legend()
     # Custom X axis
