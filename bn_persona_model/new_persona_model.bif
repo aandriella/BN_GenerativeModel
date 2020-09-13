@@ -66,18 +66,7 @@ probability ( reactivity | attention ) {
   (medium)  0.2, 0.5, 0.3;
   (high)  0.1, 0.2, 0.7;
 }
-#CPDS 7
-probability (user_action | memory, reactivity) {
-(low, slow)  0.2, 0.5, 0.3;
-(low, medium) 0.3, 0.5, 0.2;
-(low, fast) 0.4, 0.5, 0.1;
-(medium, slow) 0.5, 0.3, 0.2;
-(medium, medium) 0.55, 0.35, 0.1;
-(medium, fast) 0.6, 0.4, 0.0;
-(high, slow)  0.5, 0.4, 0.1;
-(high, medium) 0.6, 0.3, 0.1;
-(high, fast) 0.8, 0.2, 0.0;
-}
+
 
 probability (user_react_time | memory, reactivity) {
 (low, slow)  0.2, 0.5, 0.3;
@@ -90,53 +79,55 @@ probability (user_react_time | memory, reactivity) {
 (high, medium) 0.6, 0.3, 0.1;
 (high, fast) 0.8, 0.2, 0.0;
 }
-
-
-#CPDS 5
-probability (robot_feedback | user_action) {
-  (correct) 0.8, 0.2;
-  (wrong) 0.5, 0.5;
-  (timeout) 0.2, 0.8;
-}
-#CPDS 6
-probability (robot_assistance | user_action) {
-  (correct) 0.05 0.1 0.15 0.3 0.4;
-  (wrong) 0.4 0.3 0.2 0.05 0.05;
-  (timeout) 0.4 0.4 0.1 0.05 0.05;
-}
-#CPDS 2
-probability (game_state | user_action)  {
-   (correct) 0.2, 0.4, 0.4;
-   (wrong) 0.4, 0.4, 0.2;
-   (timeout) 0.6, 0.3, 0.1;
-}
-#CPDS 0
-probability (attempt | user_action)  {
-   (correct) 0.1, 0.2, 0.3, 0.4;
-   (wrong) 0.5, 0.3, 0.15, 0.05;
-   (timeout) 0.4, 0.3, 0.2, 0.1;
-}
-
 probability (robot_feedback | user_react_time) {
   (slow) 0.8, 0.2;
   (normal) 0.5, 0.5;
   (fast) 0.2, 0.8;
 }
-#CPDS 6
 probability (robot_assistance | user_react_time) {
   (slow) 0.05 0.1 0.15 0.3 0.4;
   (normal) 0.4 0.3 0.2 0.05 0.05;
   (fast) 0.4 0.4 0.1 0.05 0.05;
 }
-#CPDS 2
 probability (game_state | user_react_time)  {
    (slow) 0.2, 0.4, 0.4;
    (normal) 0.4, 0.4, 0.2;
    (fast) 0.6, 0.3, 0.1;
 }
-#CPDS 0
 probability (attempt | user_react_time)  {
    (slow) 0.1, 0.2, 0.3, 0.4;
    (normal) 0.5, 0.3, 0.15, 0.05;
    (fast) 0.4, 0.3, 0.2, 0.1;
+}
+
+probability (user_action | memory, reactivity) {
+(low, slow)  0.2, 0.5, 0.3;
+(low, medium) 0.3, 0.5, 0.2;
+(low, fast) 0.4, 0.5, 0.1;
+(medium, slow) 0.5, 0.3, 0.2;
+(medium, medium) 0.55, 0.35, 0.1;
+(medium, fast) 0.6, 0.4, 0.0;
+(high, slow)  0.5, 0.4, 0.1;
+(high, medium) 0.6, 0.3, 0.1;
+(high, fast) 0.8, 0.2, 0.0;
+}
+probability (robot_feedback | user_action) {
+  (correct) 0.8, 0.2;
+  (wrong) 0.5, 0.5;
+  (timeout) 0.2, 0.8;
+}
+probability (robot_assistance | user_action) {
+  (correct) 0.05 0.1 0.15 0.3 0.4;
+  (wrong) 0.4 0.3 0.2 0.05 0.05;
+  (timeout) 0.4 0.4 0.1 0.05 0.05;
+}
+probability (game_state | user_action)  {
+   (correct) 0.2, 0.4, 0.4;
+   (wrong) 0.4, 0.4, 0.2;
+   (timeout) 0.6, 0.3, 0.1;
+}
+probability (attempt | user_action)  {
+   (correct) 0.1, 0.2, 0.3, 0.4;
+   (wrong) 0.5, 0.3, 0.15, 0.05;
+   (timeout) 0.4, 0.3, 0.2, 0.1;
 }

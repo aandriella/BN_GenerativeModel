@@ -80,64 +80,27 @@ probability (robot_feedback | user_capability) {
 (severe) 0.8, 0.2;
 }
 
-
-probability (robot_assistance | game_state, attempt, user_capability) {
-  (beg, att_1, very_mild)  0.25, 0.25, 0.2, 0.2, 0.1;
-  (mid, att_1, very_mild)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (end, att_1, very_mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (beg, att_2, very_mild)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (mid, att_2, very_mild)  0.5, 0.3, 0.1, 0.1, 0.0;
-  (end, att_2, very_mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_3, very_mild)  0.4, 0.4, 0.2, 0.0, 0.0;
-  (mid, att_3, very_mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (end, att_3, very_mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_4, very_mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (mid, att_4, very_mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (end, att_4, very_mild)  0.7, 0.2, 0.1, 0.0, 0.0;
-
-  (beg, att_1, mild)  0.1, 0.2, 0.3, 0.3, 0.1;
-  (mid, att_1, mild)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (end, att_1, mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (beg, att_2, mild)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (mid, att_2, mild)  0.5, 0.3, 0.1, 0.1, 0.0;
-  (end, att_2, mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_3, mild)  0.4, 0.4, 0.2, 0.0, 0.0;
-  (mid, att_3, mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (end, att_3, mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_4, mild)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (mid, att_4, mild)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (end, att_4, mild)  0.7, 0.2, 0.1, 0.0, 0.0;
-
-  (beg, att_1, severe)  0.1, 0.2, 0.3, 0.25, 0.15;
-  (mid, att_1, severe)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (end, att_1, severe)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (beg, att_2, severe)  0.4, 0.3, 0.2, 0.1, 0.0;
-  (mid, att_2, severe)  0.5, 0.3, 0.1, 0.1, 0.0;
-  (end, att_2, severe)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_3, severe)  0.4, 0.4, 0.2, 0.0, 0.0;
-  (mid, att_3, severe)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (end, att_3, severe)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (beg, att_4, severe)  0.5, 0.3, 0.2, 0.0, 0.0;
-  (mid, att_4, severe)  0.6, 0.3, 0.1, 0.0, 0.0;
-  (end, att_4, severe)  0.7, 0.2, 0.1, 0.0, 0.0;
-
+probability (game_state | robot_assistance) {
+(lev_0) 0.1, 0.3, 0.6;
+(lev_1) 0.2, 0.3, 0.5;
+(lev_2) 0.4, 0.3, 0.3;
+(lev_3) 0.4, 0.3, 0.3;
+(lev_4) 0.5, 0.4, 0.1;
 }
 
-probability (robot_feedback | game_state, attempt) {
-  (beg, att_1) 0.5, 0.5;
-  (mid, att_1) 0.4, 0.6;
-  (end, att_1) 0.3, 0.7;
+probability (attempt | robot_assistance) {
+(lev_0) 0.1, 0.2, 0.3, 0.4;
+(lev_1) 0.1, 0.2, 0.3, 0.4;
+(lev_2) 0.2, 0.2, 0.2, 0.4;
+(lev_3) 0.25, 0.25, 0.25, 0.25;
+(lev_4) 0.1, 0.25, 0.25, 0.4;
+}
 
-  (beg, att_2) 0.4, 0.6;
-  (mid, att_2) 0.3, 0.7;
-  (end, att_2) 0.2, 0.8;
-
-  (beg, att_3) 0.3, 0.7;
-  (mid, att_3) 0.2, 0.8;
-  (end, att_3) 0.1, 0.9;
-
-  (beg, att_4) 0.2, 0.8;
-  (mid, att_4) 0.1, 0.9;
-  (end, att_4) 0.0, 1.0;
-
+probability (game_state | robot_feedback) {
+(no) 0.2, 0.4, 0.4;
+(yes) 0.4, 0.4, 0.2;
+}
+probability (attempt | robot_feedback)  {
+(no) 0.1,0.15, 0.25, 0.5;
+(yes) 0.4, 0.3, 0.2, 0.1;
 }
