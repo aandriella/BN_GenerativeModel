@@ -52,8 +52,10 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
                user_reactivity_name, user_reactivity_value,
                task_progress_name, game_attempt_name, robot_assistance_name, robot_feedback_name,
                bn_model_robot_assistance, var_robot_assistance_target_action, bn_model_robot_feedback,
-               var_robot_feedback_target_action, other_user_bn_model, var_other_user_action_target_action,
-               var_other_user_target_react_time_action, other_user_memory_name, other_user_memory_value,
+               var_robot_feedback_target_action,
+               bn_model_other_user_action, var_other_user_action_target_action,
+               bn_model_other_user_react_time, var_other_user_target_react_time_action,
+               other_user_memory_name, other_user_memory_value,
                other_user_attention_name, other_user_attention_value, other_user_reactivity_name,
                other_user_reactivity_value, epochs=50, task_complexity=5):
     '''
@@ -141,26 +143,26 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
                                    task_progress_name: game_state_counter,
                                    game_attempt_name: attempt_counter,
                                    }
-            query_robot_assistance_prob = bn_functions.infer_prob_from_state(robot_bn_model,
+            query_robot_assistance_prob = bn_functions.infer_prob_from_state(bn_model_robot_assistance,
                                                                    infer_variable=var_robot_assistance_target_action,
                                                                    evidence_variables=vars_robot_evidence)
 
-            query_robot_feedback_prob = bn_functions.infer_prob_from_state(robot_bn_model,
+            query_robot_feedback_prob = bn_functions.infer_prob_from_state(bn_model_robot_feedback,
                                                                       infer_variable=var_robot_feedback_target_action,
                                                                       evidence_variables=vars_robot_evidence)
 
 
-            selected_robot_assistance_action = bn_functions.get_stochastic_action(query_robot_assistance_prob)
-            selected_robot_feedback_action = bn_functions.get_stochastic_action(query_robot_feedback_prob)
+            selected_robot_assistance_action = bn_functions.get_stochastic_action(query_robot_assistance_prob.values)
+            selected_robot_feedback_action = bn_functions.get_stochastic_action(query_robot_feedback_prob.values)
 
             #counters for plots
-            n_assistance_lev_per_episode[selected_robot_assistance_action][e] += 1
-            n_feedback_per_episode[selected_robot_feedback_action][e] += 1
+            n_assistance_lev_per_episode[e][selected_robot_assistance_action] += 1
+            n_feedback_per_episode[e][selected_robot_feedback_action] += 1
             print("robot_assistance {}, attempt {}, game {}, robot_feedback {}".format(selected_robot_assistance_action, attempt_counter, game_state_counter, selected_robot_feedback_action))
 
             ##########################QUERY FOR THE USER ACTION AND REACT TIME#####################################
             #compare the real user with the estimated Persona and returns a user action (0, 1, 2)
-            if other_user_bn_model!=None:
+            if bn_model_other_user_action!=None and bn_model_user_react_time!=None:
                 #return the user action in this state based on the user profile
                 vars_other_user_evidence = {other_user_attention_name:other_user_attention_value,
                                             other_user_reactivity_name:other_user_reactivity_value,
@@ -170,10 +172,10 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
                                             robot_assistance_name:selected_robot_assistance_action,
                                             robot_feedback_name:selected_robot_feedback_action
                                             }
-                query_user_action_prob = bn_functions.infer_prob_from_state(other_user_bn_model,
+                query_user_action_prob = bn_functions.infer_prob_from_state(bn_model_other_user_action,
                                                                             infer_variable=var_other_user_action_target_action,
                                                                             evidence_variables=vars_other_user_evidence)
-                query_user_react_time_prob = bn_functions.infer_prob_from_state(other_user_bn_model,
+                query_user_react_time_prob = bn_functions.infer_prob_from_state(bn_model_other_user_react_time,
                                                                                 infer_variable=var_other_user_target_react_time_action,
                                                                                 evidence_variables=vars_other_user_evidence)
 
@@ -188,17 +190,17 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
                                       robot_assistance_name: selected_robot_assistance_action,
                                       robot_feedback_name: selected_robot_feedback_action
                                       }
-                query_user_action_prob = bn_functions.infer_prob_from_state(user_bn_model,
+                query_user_action_prob = bn_functions.infer_prob_from_state(bn_model_user_action,
                                                                        infer_variable=var_user_action_target_action,
                                                                        evidence_variables=vars_user_evidence)
-                query_user_react_time_prob = bn_functions.infer_prob_from_state(user_bn_model,
+                query_user_react_time_prob = bn_functions.infer_prob_from_state(bn_model_user_react_time,
                                                                        infer_variable=var_user_react_time_target_action,
                                                                        evidence_variables=vars_user_evidence)
 
-            selected_user_action = bn_functions.get_stochastic_action(query_user_action_prob)
-            selected_user_react_time = bn_functions.get_stochastic_action(query_user_react_time_prob)
+            selected_user_action = bn_functions.get_stochastic_action(query_user_action_prob.values)
+            selected_user_react_time = bn_functions.get_stochastic_action(query_user_react_time_prob.values)
             # counters for plots
-            n_react_time_per_episode[selected_user_react_time][e] += 1
+            n_react_time_per_episode[e][selected_user_react_time] += 1
 
             #updates counters for user action
             robot_assistance_per_action[selected_user_action][selected_robot_assistance_action] += 1
@@ -293,45 +295,50 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
 #SIMULATION PARAMS
 robot_assistance = [i for i in range(Robot_Assistance.counter.value)]
 robot_feedback = [i for i in range(Robot_Feedback.counter.value)]
-epochs = 40
+epochs = 10
 
 #initialise the robot
-robot_assistance_bn_cpds = bnlearn.import_DAG('bn_robot_model/robot_assistive_model.bif')
-robot_feedback_bn_cpds = bnlearn.import_DAG('bn_robot_model/robot_feedback_model.bif')
-persona_action_bn_cpds = bnlearn.import_DAG('bn_persona_model/user_action_model.bif')
-persona_react_time_bn_cpds = bnlearn.import_DAG('bn_persona_model/user_react_time_model.bif')
+bn_model_robot_assistance = bnlearn.import_DAG('bn_robot_model/robot_assistive_model.bif')
+bn_model_robot_feedback = bnlearn.import_DAG('bn_robot_model/robot_feedback_model.bif')
+bn_model_user_action = bnlearn.import_DAG('bn_persona_model/user_action_model.bif')
+bn_model_user_react_time = bnlearn.import_DAG('bn_persona_model/user_react_time_model.bif')
+bn_model_other_user_action = None#bnlearn.import_DAG('bn_persona_model/other_user_action_model.bif')
+bn_model_other_user_react_time = None#bnlearn.import_DAG('bn_persona_model/other_user_react_time_model.bif')
 
 #initialise memory, attention and reactivity varibles
 persona_memory = 0; persona_attention = 0; persona_reactivity = 1;
 #initialise memory, attention and reactivity varibles
-real_user_memory = 2; real_user_attention = 2; real_user_reactivity = 2;
-real_user_cpds = None#bnlearn.import_DAG('bn_other_user_model/user_model.bif')
+other_user_memory = 2; other_user_attention = 2; other_user_reactivity = 2;
 
-game_performance_per_episode, react_time_per_episode, robot_assistance_per_episode = \
-simulation(bn_model_user_action=persona_action_bn_cpds, user_var_target_action=['user_action'],
-           bn_model_user_react_time=persona_react_time_bn_cpds, user_var_target_react_time=['user_react_time'],
+game_performance_per_episode, react_time_per_episode, robot_assistance_per_episode, robot_feedback_per_episode = \
+simulation(bn_model_user_action=bn_model_user_action, var_user_action_target_action=['user_action'],
+           bn_model_user_react_time=bn_model_user_react_time, var_user_react_time_target_action=['user_react_time'],
            user_memory_name="memory", user_memory_value=persona_memory,
            user_attention_name="attention", user_attention_value=persona_attention,
            user_reactivity_name="reactivity", user_reactivity_value=persona_reactivity,
            task_progress_name="game_state", game_attempt_name="attempt",
            robot_assistance_name="robot_assistance", robot_feedback_name="robot_feedback",
-           bn_model_robot_assistance=robot_assistance_bn_cpds, robot_var_ass_action=["robot_assistance"],
-           bn_model_robot_feedback=robot_feedback_bn_cpds, robot_var_feedback_action=["robot_feedback"],
-           other_user_bn_model=real_user_cpds, other_user_var_target_action=['user_action'],
-            other_user_var_target_react_time=["user_react_time"], other_user_memory_name="memory",
-           other_user_memory_value=real_user_memory, other_user_attention_name="attention",
-           other_user_attention_value=real_user_attention, other_user_reactivity_name="reactivity",
-           other_user_reactivity_value=real_user_reactivity, epochs=epochs, task_complexity=5)
+           bn_model_robot_assistance=bn_model_robot_assistance, var_robot_assistance_target_action=["robot_assistance"],
+           bn_model_robot_feedback=bn_model_robot_feedback, var_robot_feedback_target_action=["robot_feedback"],
+           bn_model_other_user_action=bn_model_other_user_action, var_other_user_action_target_action=['user_action'],
+           bn_model_other_user_react_time=bn_model_other_user_react_time,
+            var_other_user_target_react_time_action=["user_react_time"], other_user_memory_name="memory",
+           other_user_memory_value=other_user_memory, other_user_attention_name="attention",
+           other_user_attention_value=other_user_attention, other_user_reactivity_name="reactivity",
+           other_user_reactivity_value=other_user_reactivity, epochs=epochs, task_complexity=5)
 
 plot_game_performance_path = ""
 plot_robot_assistance_path = ""
 
-if real_user_cpds != None:
+if bn_model_other_user_action != None:
     plot_game_performance_path = "game_performance_"+"_epoch_"+str(epochs)+"_real_user_memory_"+str(real_user_memory)+"_real_user_attention_"+str(real_user_attention)+"_real_user_reactivity_"+str(real_user_reactivity)+".jpg"
     plot_robot_assistance_path = "robot_assistance_"+"epoch_"+str(epochs)+"_real_user_memory_"+str(real_user_memory)+"_real_user_attention_"+str(real_user_attention)+"_real_user_reactivity_"+str(real_user_reactivity)+".jpg"
+    plot_robot_feedback_path = "robot_feedback_"+"epoch_"+str(epochs)+"_real_user_memory_"+str(real_user_memory)+"_real_user_attention_"+str(real_user_attention)+"_real_user_reactivity_"+str(real_user_reactivity)+".jpg"
+
 else:
     plot_game_performance_path = "game_performance_"+"epoch_" + str(epochs) + "_persona_memory_" + str(persona_memory) + "_persona_attention_" + str(persona_attention) + "_persona_reactivity_" + str(persona_reactivity) + ".jpg"
     plot_robot_assistance_path = "robot_assistance_"+"epoch_"+str(epochs)+"_persona_memory_"+str(persona_memory)+"_persona_attention_"+str(persona_attention)+"_persona_reactivity_"+str(persona_reactivity)+".jpg"
+    plot_robot_feedback_path = "robot_feedback_"+"epoch_"+str(epochs)+"_persona_memory_"+str(persona_memory)+"_persona_attention_"+str(persona_attention)+"_persona_reactivity_"+str(persona_reactivity)+".jpg"
 
 dir_name = input("Please insert the name of the directory:")
 full_path = os.getcwd()+"/results/"+dir_name+"/"
@@ -347,6 +354,7 @@ else:
 
 utils.plot2D_game_performance(full_path+plot_game_performance_path, epochs, game_performance_per_episode)
 utils.plot2D_assistance(full_path+plot_robot_assistance_path, epochs, robot_assistance_per_episode)
+utils.plot2D_feedback(full_path+plot_robot_feedback_path, epochs, robot_feedback_per_episode)
 
 '''
 With the current simulator we can generate a list of episodes
