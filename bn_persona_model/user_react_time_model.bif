@@ -23,9 +23,6 @@ variable game_state {
 variable robot_feedback {
   type discrete [ 2 ] { yes, no };
 }
-variable user_action {
-  type discrete [ 3 ] { correct, wrong, timeout };
-}
 variable user_react_time {
   type discrete [ 3 ] { slow, normal, fast};
 }
@@ -39,9 +36,6 @@ probability ( game_state ) {
 }
 probability ( attempt ) {
   table 0.25, 0.25, 0.25, 0.25;
-}
-probability ( user_action ) {
-  table 0.33, 0.33, 0.34;
 }
 #CPDS 4 #SPECIFICALLY FOR THE GIVEN PATIENT
 probability ( reactivity ) {
@@ -98,36 +92,4 @@ probability (attempt | user_react_time)  {
    (slow) 0.1, 0.2, 0.3, 0.4;
    (normal) 0.5, 0.3, 0.15, 0.05;
    (fast) 0.4, 0.3, 0.2, 0.1;
-}
-
-probability (user_action | memory, reactivity) {
-(low, slow)  0.2, 0.5, 0.3;
-(low, medium) 0.3, 0.5, 0.2;
-(low, fast) 0.4, 0.5, 0.1;
-(medium, slow) 0.5, 0.3, 0.2;
-(medium, medium) 0.55, 0.35, 0.1;
-(medium, fast) 0.6, 0.4, 0.0;
-(high, slow)  0.5, 0.4, 0.1;
-(high, medium) 0.6, 0.3, 0.1;
-(high, fast) 0.8, 0.2, 0.0;
-}
-probability (robot_feedback | user_action) {
-  (correct) 0.8, 0.2;
-  (wrong) 0.5, 0.5;
-  (timeout) 0.2, 0.8;
-}
-probability (robot_assistance | user_action) {
-  (correct) 0.05 0.1 0.15 0.3 0.4;
-  (wrong) 0.4 0.3 0.2 0.05 0.05;
-  (timeout) 0.4 0.4 0.1 0.05 0.05;
-}
-probability (game_state | user_action)  {
-   (correct) 0.2, 0.4, 0.4;
-   (wrong) 0.4, 0.4, 0.2;
-   (timeout) 0.6, 0.3, 0.1;
-}
-probability (attempt | user_action)  {
-   (correct) 0.1, 0.2, 0.3, 0.4;
-   (wrong) 0.5, 0.3, 0.15, 0.05;
-   (timeout) 0.4, 0.3, 0.2, 0.1;
 }

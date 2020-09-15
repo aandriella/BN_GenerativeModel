@@ -1,4 +1,4 @@
-network robot_model {
+network robot_assistive_model {
 }
 
 %VARIABLES DEFINITION
@@ -9,10 +9,7 @@ variable memory {
   type discrete[3] {low, medium, high};
 }
 variable robot_assistance {
-  type discrete [ 5 ] { lev_0, lev_1, lev_2, lev_3, lev_4};
-}
-variable robot_feedback {
-  type discrete [ 2 ] { no, yes };
+  type discrete [ 6 ] { lev_0, lev_1, lev_2, lev_3, lev_4, lev_5};
 }
 variable attempt {
   type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
@@ -27,10 +24,7 @@ variable user_capability {
 
 %INDIVIDUAL PROBABILITIES DEFINITION
 probability ( robot_assistance ) {
-  table 0.2, 0.2, 0.2, 0.2, 0.2;
-}
-probability ( robot_feedback ) {
-  table 0.5, 0.5;
+  table 0.16, 0.17, 0.17, 0.17, 0.16, 0.17;
 }
 probability ( game_state ) {
   table 0.34, 0.33, 0.33;
@@ -69,15 +63,9 @@ probability (user_capability | memory, reactivity) {
 }
 
 probability (robot_assistance | user_capability) {
-(very_mild) 0.4, 0.3, 0.2, 0.1, 0.0;
-(mild) 0.2, 0.3, 0.3, 0.1, 0.1;
-(severe) 0.1, 0.1, 0.3, 0.3, 0.2;
-}
-
-probability (robot_feedback | user_capability) {
-(very_mild) 0.2, 0.8;
-(mild)  0.5, 0.5;
-(severe) 0.8, 0.2;
+(very_mild) 0.4, 0.3, 0.2, 0.1, 0.0, 0.0;
+(mild) 0.2, 0.3, 0.3, 0.1, 0.05, 0.05;
+(severe) 0.0, 0.05, 0.25, 0.3, 0.2, 0.2;
 }
 
 probability (game_state | robot_assistance) {
@@ -86,6 +74,7 @@ probability (game_state | robot_assistance) {
 (lev_2) 0.4, 0.3, 0.3;
 (lev_3) 0.4, 0.3, 0.3;
 (lev_4) 0.5, 0.4, 0.1;
+(lev_5) 0.5, 0.4, 0.1;
 }
 
 probability (attempt | robot_assistance) {
@@ -94,13 +83,5 @@ probability (attempt | robot_assistance) {
 (lev_2) 0.2, 0.2, 0.2, 0.4;
 (lev_3) 0.25, 0.25, 0.25, 0.25;
 (lev_4) 0.1, 0.25, 0.25, 0.4;
-}
-
-probability (game_state | robot_feedback) {
-(no) 0.2, 0.4, 0.4;
-(yes) 0.4, 0.4, 0.2;
-}
-probability (attempt | robot_feedback)  {
-(no) 0.1,0.15, 0.25, 0.5;
-(yes) 0.4, 0.3, 0.2, 0.1;
+(lev_5) 0.1, 0.25, 0.25, 0.4;
 }

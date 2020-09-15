@@ -1,0 +1,96 @@
+network persona_model {
+}
+
+%VARIABLES DEFINITION
+variable reactivity {
+  type discrete [3] {slow, medium, fast};
+}
+variable memory {
+  type discrete[3] {low, medium, high};
+}
+variable attention {
+  type discrete[3] {low, medium, high};
+}
+variable robot_assistance {
+  type discrete [ 5 ] { lev_0, lev_1, lev_2, lev_3, lev_4 };
+}
+variable attempt {
+  type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
+}
+variable game_state {
+  type discrete [ 3 ] { beg, mid, end };
+}
+variable robot_feedback {
+  type discrete [ 2 ] { yes, no };
+}
+variable user_action {
+  type discrete [ 3 ] { correct, wrong, timeout };
+}
+
+
+%INDIVIDUAL PROBABILITIES DEFINITION
+probability ( robot_assistance ) {
+  table 0.2, 0.2, 0.2, 0.2, 0.2;
+}
+probability ( game_state ) {
+  table 0.34, 0.33, 0.33;
+}
+probability ( attempt ) {
+  table 0.25, 0.25, 0.25, 0.25;
+}
+probability ( user_action ) {
+  table 0.33, 0.33, 0.34;
+}
+#CPDS 4 #SPECIFICALLY FOR THE GIVEN PATIENT
+probability ( reactivity ) {
+  table 0.34, 0.33, 0.33;
+}
+#CPDS 3 #SPECIFICALLY FOR THE GIVEN PATIENT
+probability ( memory ) {
+  table 0.33, 0.33, 0.34;
+}
+#CPDS 1 #SPECIFICALLY FOR THE GIVEN PATIENT
+probability ( attention ) {
+  table 0.33, 0.33, 0.34;
+}
+probability ( robot_feedback ) {
+  table 0.5, 0.5;
+}
+
+probability ( reactivity | attention ) {
+  (low) 0.7, 0.2, 0.1;
+  (medium)  0.2, 0.5, 0.3;
+  (high)  0.1, 0.2, 0.7;
+}
+
+probability (user_action | memory, reactivity) {
+(low, slow)  0.2, 0.5, 0.3;
+(low, medium) 0.3, 0.5, 0.2;
+(low, fast) 0.4, 0.5, 0.1;
+(medium, slow) 0.5, 0.3, 0.2;
+(medium, medium) 0.55, 0.35, 0.1;
+(medium, fast) 0.6, 0.4, 0.0;
+(high, slow)  0.5, 0.4, 0.1;
+(high, medium) 0.6, 0.3, 0.1;
+(high, fast) 0.8, 0.2, 0.0;
+}
+probability (robot_feedback | user_action) {
+  (correct) 0.8, 0.2;
+  (wrong) 0.5, 0.5;
+  (timeout) 0.2, 0.8;
+}
+probability (robot_assistance | user_action) {
+  (correct) 0.05 0.1 0.15 0.3 0.4;
+  (wrong) 0.4 0.3 0.2 0.05 0.05;
+  (timeout) 0.4 0.4 0.1 0.05 0.05;
+}
+probability (game_state | user_action)  {
+   (correct) 0.2, 0.4, 0.4;
+   (wrong) 0.4, 0.4, 0.2;
+   (timeout) 0.6, 0.3, 0.1;
+}
+probability (attempt | user_action)  {
+   (correct) 0.1, 0.2, 0.3, 0.4;
+   (wrong) 0.5, 0.3, 0.15, 0.05;
+   (timeout) 0.4, 0.3, 0.2, 0.1;
+}
