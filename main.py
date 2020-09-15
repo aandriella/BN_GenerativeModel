@@ -1,7 +1,7 @@
 import bnlearn
 import os
 #import classes and modules
-from bn_variables import Memory, Attention, Reactivity, Robot_Assistance, Robot_Feedback, Robot_Assistance_Feedback, User_Action, User_Capability, Game_State, Attempt
+from bn_variables import Robot_Assistance, Robot_Feedback, User_Action, User_React_time, Game_State, Attempt
 import bn_functions
 import utils
 
@@ -47,49 +47,15 @@ def compute_next_state(user_action, task_evolution, attempt_counter, correct_mov
 
     return task_evolution, attempt_counter, correct_move_counter, wrong_move_counter, timeout_counter, max_attept_counter
 
-
-def interpret_user_output(action_id):
-    user_action = 0
-    user_react_time = 0
-
-    if action_id == 0:
-        user_action = 0;
-        user_react_time = 0
-    elif action_id == 1:
-        user_action = 1;
-        user_react_time = 0
-    elif action_id == 2:
-        user_action = 2;
-        user_react_time = 0
-    elif action_id == 3:
-        user_action = 0;
-        user_react_time = 1
-    elif action_id == 4:
-        user_action = 1;
-        user_react_time = 1
-    elif action_id == 5:
-        user_action = 2;
-        user_react_time = 1
-    elif action_id == 6:
-        user_action = 0;
-        user_react_time = 2
-    elif action_id == 7:
-        user_action = 1;
-        user_react_time = 2
-    elif action_id == 8:
-        user_action = 2;
-        user_react_time = 2
-
-    return user_action, user_react_time
-
-def simulation(user_bn_model, user_var_target_action, user_var_target_react_time, user_memory_name, user_memory_value, user_attention_name, user_attention_value,
+def simulation(bn_model_user_action, var_user_action_target_action, bn_model_user_react_time, var_user_react_time_target_action,
+               user_memory_name, user_memory_value, user_attention_name, user_attention_value,
                user_reactivity_name, user_reactivity_value,
                task_progress_name, game_attempt_name, robot_assistance_name, robot_feedback_name,
-               robot_bn_model, robot_var_ass_action, robot_var_feedback_action,
-               other_user_bn_model, other_user_var_target_action, other_user_var_target_react_time, other_user_memory_name, other_user_memory_value,
-               other_user_attention_name, other_user_attention_value,
-               other_user_reactivity_name, other_user_reactivity_value,
-               epochs=50, task_complexity=5):
+               bn_model_robot_assistance, var_robot_assistance_target_action, bn_model_robot_feedback,
+               var_robot_feedback_target_action, other_user_bn_model, var_other_user_action_target_action,
+               var_other_user_target_react_time_action, other_user_memory_name, other_user_memory_value,
+               other_user_attention_name, other_user_attention_value, other_user_reactivity_name,
+               other_user_reactivity_value, epochs=50, task_complexity=5):
     '''
     Args:
 
@@ -102,26 +68,23 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
     #TODO: remove robot_assistance_vect and robot_feedback_vect
 
     #metrics we need, in order to compute afterwords the belief
-    '''
-    CPD 0: for each attempt 1 to 4 store the number of correct, wrong and timeout
-    '''
+
     attempt_counter_per_action = [[0 for i in range(Attempt.counter.value)]  for j in range(User_Action.counter.value)]
-    '''
-    CPD 2: for each game_state 0 to 2 store the number of correct, wrong and timeout
-    '''
     game_state_counter_per_action = [[0 for i in range(Game_State.counter.value)]  for j in range(User_Action.counter.value)]
-    '''
-    CPD 5: for each robot feedback store the number of correct, wrong and timeout
-    '''
     robot_feedback_per_action = [[0 for i in range(Robot_Feedback.counter.value)] for j in range(User_Action.counter.value)]
-    '''
-    CPD 6: for each robot assistance store the number of pos and neg feedback
-    '''
     robot_assistance_per_action = [[0 for i in range(Robot_Assistance.counter.value)] for j in range(User_Action.counter.value)]
 
+    attempt_counter_per_react_time = [[0 for i in range(Attempt.counter.value)] for j in range(User_React_time.counter.value)]
+    game_state_counter_per_react_time = [[0 for i in range(Game_State.counter.value)] for j in range(User_React_time.counter.value)]
+    robot_feedback_per_react_time = [[0 for i in range(Robot_Feedback.counter.value)] for j in  range(User_React_time.counter.value)]
+    robot_assistance_per_react_time = [[0 for i in range(Robot_Assistance.counter.value)] for j in   range(User_React_time.counter.value)]
 
-    #these are the variables of the persona bn that are dynamic and will be affected from the game evolution
-    #TODO: it might be worth to integrate them as a param in the simulation function, only the name?
+    game_state_counter_per_robot_assistance = [[0 for i in range(Game_State.counter.value)] for j in   range(Robot_Assistance.counter.value)]
+    attempt_counter_per_robot_assistance = [[0 for i in range(Attempt.counter.value)] for j in   range(Robot_Assistance.counter.value)]
+
+    game_state_counter_per_robot_feedback = [[0 for i in range(Game_State.counter.value)] for j in   range(Robot_Feedback.counter.value)]
+    attempt_counter_per_robot_feedback = [[0 for i in range(Attempt.counter.value)] for j in   range(Robot_Feedback.counter.value)]
+
 
     #output variables:
     n_correct_per_episode = [0]*epochs
@@ -131,6 +94,7 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
     game_performance_episode = [0]*epochs
     n_assistance_lev_per_episode = [[0 for i in range(Robot_Assistance.counter.value)] for j in range(epochs)]
     n_feedback_per_episode = [[0 for i in range(Robot_Feedback.counter.value)] for j in range(epochs)]
+    n_react_time_per_episode = [[0 for i in range(User_React_time.counter.value)] for j in range(epochs)]
 
     for e in range(epochs):
         '''Simulation framework'''
@@ -142,17 +106,25 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
         wrong_move_counter = 0
         timeout_counter = 0
         max_attempt_counter = 0
-        selected_robot_assistance_action = 0
-        selected_robot_feedback_action = 0
 
-        user_dynamic_variables = {'attempt': attempt_counter_per_action,
+        #The following variables are used to update the BN at the end of the episode
+        user_action_dynamic_variables = {'attempt': attempt_counter_per_action,
                              'game_state': game_state_counter_per_action,
                              'robot_assistance': robot_assistance_per_action,
                              'robot_feedback': robot_feedback_per_action}
 
-        robot_dynamic_variables = {'attempt': attempt_counter_per_action,
-                                  'game_state': game_state_counter_per_action}
+        user_react_time_dynamic_variables = {'attempt': attempt_counter_per_react_time,
+                             'game_state': game_state_counter_per_react_time,
+                             'robot_assistance': robot_assistance_per_react_time,
+                             'robot_feedback': robot_feedback_per_react_time}
 
+        robot_assistance_dynamic_variables = {'attempt': attempt_counter_per_robot_assistance,
+                                  'game_state': game_state_counter_per_robot_assistance}
+
+        robot_feedback_dynamic_variables = {'attempt': attempt_counter_per_robot_feedback,
+                                  'game_state': game_state_counter_per_robot_feedback}
+
+        #####################SIMULATE ONE EPISODE#########################################
         while(task_evolution<task_complexity):
             #if then else are necessary to classify the task game state into beg, mid, end
             if task_evolution>=0 and task_evolution<=1:
@@ -162,29 +134,35 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
             else:
                 game_state_counter = 2
 
-            robot_vars_evidence = {user_reactivity_name: user_reactivity_value,
+            ##################QUERY FOR THE ROBOT ASSISTANCE AND FEEDBACK##################
+            vars_robot_evidence = {
+                                   user_reactivity_name: user_reactivity_value,
                                    user_memory_name: user_memory_value,
                                    task_progress_name: game_state_counter,
                                    game_attempt_name: attempt_counter,
                                    }
-            query_robot_ass_prob = bn_functions.infer_prob_from_state(robot_bn_model,
-                                                                   infer_variable=robot_var_ass_action,
-                                                                   evidence_variables=robot_vars_evidence)
-            query_robot_feedback_prob = bn_functions.infer_prob_from_state(robot_bn_model,
-                                                                      infer_variable=robot_var_feedback_action,
-                                                                      evidence_variables=robot_vars_evidence)
+            query_robot_assistance_prob = bn_functions.infer_prob_from_state(robot_bn_model,
+                                                                   infer_variable=var_robot_assistance_target_action,
+                                                                   evidence_variables=vars_robot_evidence)
 
-            selected_robot_assistance_action = bn_functions.get_stochastic_action(query_robot_ass_prob)
+            query_robot_feedback_prob = bn_functions.infer_prob_from_state(robot_bn_model,
+                                                                      infer_variable=var_robot_feedback_target_action,
+                                                                      evidence_variables=vars_robot_evidence)
+
+
+            selected_robot_assistance_action = bn_functions.get_stochastic_action(query_robot_assistance_prob)
             selected_robot_feedback_action = bn_functions.get_stochastic_action(query_robot_feedback_prob)
 
+            #counters for plots
             n_assistance_lev_per_episode[selected_robot_assistance_action][e] += 1
             n_feedback_per_episode[selected_robot_feedback_action][e] += 1
             print("robot_assistance {}, attempt {}, game {}, robot_feedback {}".format(selected_robot_assistance_action, attempt_counter, game_state_counter, selected_robot_feedback_action))
 
+            ##########################QUERY FOR THE USER ACTION AND REACT TIME#####################################
             #compare the real user with the estimated Persona and returns a user action (0, 1, 2)
             if other_user_bn_model!=None:
                 #return the user action in this state based on the user profile
-                other_user_vars_evidence = {other_user_attention_name:other_user_attention_value,
+                vars_other_user_evidence = {other_user_attention_name:other_user_attention_value,
                                             other_user_reactivity_name:other_user_reactivity_value,
                                             other_user_memory_name:other_user_memory_value,
                                             task_progress_name:game_state_counter,
@@ -192,45 +170,52 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
                                             robot_assistance_name:selected_robot_assistance_action,
                                             robot_feedback_name:selected_robot_feedback_action
                                             }
-                query_user_action_prob = bn_functions.infer_prob_from_state(user_bn_model,
-                                                                            infer_variable=user_var_target_action,
-                                                                            evidence_variables=user_vars_evidence)
-                query_user_react_time_prob = bn_functions.infer_prob_from_state(user_bn_model,
-                                                                                infer_variable=user_var_target_react_time,
-                                                                                evidence_variables=user_vars_evidence)
+                query_user_action_prob = bn_functions.infer_prob_from_state(other_user_bn_model,
+                                                                            infer_variable=var_other_user_action_target_action,
+                                                                            evidence_variables=vars_other_user_evidence)
+                query_user_react_time_prob = bn_functions.infer_prob_from_state(other_user_bn_model,
+                                                                                infer_variable=var_other_user_target_react_time_action,
+                                                                                evidence_variables=vars_other_user_evidence)
 
 
             else:
                 #return the user action in this state based on the Persona profile
-
-                user_vars_evidence = {other_user_attention_name: user_attention_value,
-                                            user_reactivity_name: user_reactivity_value,
-                                            user_memory_name: user_memory_value,
-                                            task_progress_name: game_state_counter,
-                                            game_attempt_name: attempt_counter,
-                                            robot_assistance_name: selected_robot_assistance_action,
-                                            robot_feedback_name: selected_robot_feedback_action
-                                            }
+                vars_user_evidence = {user_attention_name: user_attention_value,
+                                      user_reactivity_name: user_reactivity_value,
+                                      user_memory_name: user_memory_value,
+                                      task_progress_name: game_state_counter,
+                                      game_attempt_name: attempt_counter,
+                                      robot_assistance_name: selected_robot_assistance_action,
+                                      robot_feedback_name: selected_robot_feedback_action
+                                      }
                 query_user_action_prob = bn_functions.infer_prob_from_state(user_bn_model,
-                                                                       infer_variable=user_var_target_action,
-                                                                       evidence_variables=user_vars_evidence)
+                                                                       infer_variable=var_user_action_target_action,
+                                                                       evidence_variables=vars_user_evidence)
                 query_user_react_time_prob = bn_functions.infer_prob_from_state(user_bn_model,
-                                                                       infer_variable=user_var_target_react_time,
-                                                                       evidence_variables=user_vars_evidence)
+                                                                       infer_variable=var_user_react_time_target_action,
+                                                                       evidence_variables=vars_user_evidence)
 
-
-
-            #this is needed because we are querying the system with user_react_time and user_action output is 3x3
             selected_user_action = bn_functions.get_stochastic_action(query_user_action_prob)
             selected_user_react_time = bn_functions.get_stochastic_action(query_user_react_time_prob)
+            # counters for plots
+            n_react_time_per_episode[selected_user_react_time][e] += 1
 
-            #updates counters for user and robot model
+            #updates counters for user action
             robot_assistance_per_action[selected_user_action][selected_robot_assistance_action] += 1
             attempt_counter_per_action[selected_user_action][attempt_counter] += 1
             game_state_counter_per_action[selected_user_action][game_state_counter] += 1
             robot_feedback_per_action[selected_user_action][selected_robot_feedback_action] += 1
-
-            #TODO create the counters for the user_react_time variables
+            #update counter for user react time
+            robot_assistance_per_react_time[selected_user_react_time][selected_robot_assistance_action] += 1
+            attempt_counter_per_react_time[selected_user_react_time][attempt_counter] += 1
+            game_state_counter_per_react_time[selected_user_react_time][game_state_counter] += 1
+            robot_feedback_per_react_time[selected_user_react_time][selected_robot_feedback_action] += 1
+            #update counter for robot feedback
+            game_state_counter_per_robot_feedback[selected_robot_feedback_action][game_state_counter] += 1
+            attempt_counter_per_robot_feedback[selected_robot_feedback_action][attempt_counter] += 1
+            #update counter for robot assistance
+            game_state_counter_per_robot_assistance[selected_robot_assistance_action][game_state_counter] += 1
+            attempt_counter_per_robot_assistance[selected_robot_assistance_action][attempt_counter] += 1
 
             #updates counters for simulation
             iter_counter += 1
@@ -247,12 +232,13 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
         print("game_state_counter_per_action {}".format(game_state_counter_per_action))
         print("robot_feedback_per_action {}".format(robot_feedback_per_action))
         print("iter {}, correct {}, wrong {}, timeout {}".format(iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
-        print("correct_move {}, wrong_move {}, timeout {}".format(correct_move_counter, wrong_move_counter, timeout_counter))
 
-        #update user model
-        user_bn_model = bn_functions.update_cpds_tables(user_bn_model, user_dynamic_variables)
-        #update robot model
-        robot_bn_model = bn_functions.update_cpds_tables(robot_bn_model, robot_dynamic_variables)
+        #update user models
+        bn_model_user_action = bn_functions.update_cpds_tables(bn_model_user_action, user_action_dynamic_variables)
+        bn_model_user_react_time = bn_functions.update_cpds_tables(bn_model_user_react_time, user_react_time_dynamic_variables)
+        #update robot models
+        bn_model_robot_assistance = bn_functions.update_cpds_tables(bn_model_robot_assistance, robot_assistance_dynamic_variables)
+        bn_model_robot_feedback = bn_functions.update_cpds_tables(bn_model_robot_feedback, robot_feedback_dynamic_variables)
 
         #reset counter
         robot_assistance_per_action = [[0 for i in range(Robot_Assistance.counter.value)] for j in
@@ -263,6 +249,25 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
                                          range(User_Action.counter.value)]
         attempt_counter_per_action = [[0 for i in range(Attempt.counter.value)] for j in
                                       range(User_Action.counter.value)]
+
+        attempt_counter_per_react_time = [[0 for i in range(Attempt.counter.value)] for j in
+                                          range(User_React_time.counter.value)]
+        game_state_counter_per_react_time = [[0 for i in range(Game_State.counter.value)] for j in
+                                             range(User_React_time.counter.value)]
+        robot_feedback_per_react_time = [[0 for i in range(Robot_Feedback.counter.value)] for j in
+                                         range(User_React_time.counter.value)]
+        robot_assistance_per_react_time = [[0 for i in range(Robot_Assistance.counter.value)] for j in
+                                           range(User_React_time.counter.value)]
+
+        game_state_counter_per_robot_assistance = [[0 for i in range(Game_State.counter.value)] for j in
+                                                   range(Robot_Assistance.counter.value)]
+        attempt_counter_per_robot_assistance = [[0 for i in range(Attempt.counter.value)] for j in
+                                                range(Robot_Assistance.counter.value)]
+
+        game_state_counter_per_robot_feedback = [[0 for i in range(Game_State.counter.value)] for j in
+                                                 range(Robot_Feedback.counter.value)]
+        attempt_counter_per_robot_feedback = [[0 for i in range(Attempt.counter.value)] for j in
+                                              range(Robot_Feedback.counter.value)]
 
         #for plots
         n_correct_per_episode[e] = correct_move_counter
@@ -275,7 +280,7 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
                                        n_max_attempt_per_episode[e]]
 
 
-    return game_performance_episode, n_assistance_lev_per_episode, n_feedback_per_episode
+    return game_performance_episode, n_react_time_per_episode, n_assistance_lev_per_episode, n_feedback_per_episode
 
 
 
@@ -285,39 +290,38 @@ def simulation(user_bn_model, user_var_target_action, user_var_target_react_time
 #############################################################################
 #############################################################################
 
-
-
 #SIMULATION PARAMS
 robot_assistance = [i for i in range(Robot_Assistance.counter.value)]
 robot_feedback = [i for i in range(Robot_Feedback.counter.value)]
 epochs = 40
 
 #initialise the robot
-robot_cpds = bnlearn.import_DAG('bn_robot_model/robot_model.bif')
+robot_assistance_bn_cpds = bnlearn.import_DAG('bn_robot_model/robot_assistive_model.bif')
+robot_feedback_bn_cpds = bnlearn.import_DAG('bn_robot_model/robot_feedback_model.bif')
+persona_action_bn_cpds = bnlearn.import_DAG('bn_persona_model/user_action_model.bif')
+persona_react_time_bn_cpds = bnlearn.import_DAG('bn_persona_model/user_react_time_model.bif')
+
 #initialise memory, attention and reactivity varibles
 persona_memory = 0; persona_attention = 0; persona_reactivity = 1;
-persona_cpds = bnlearn.import_DAG('bn_persona_model/new_persona_model.bif')
 #initialise memory, attention and reactivity varibles
 real_user_memory = 2; real_user_attention = 2; real_user_reactivity = 2;
 real_user_cpds = None#bnlearn.import_DAG('bn_other_user_model/user_model.bif')
 
-game_performance_per_episode, robot_assistance_per_episode = \
-            simulation(user_bn_model=persona_cpds, user_var_target_action=['user_action'],
-                       user_var_target_react_time=['user_react_time'],
-            user_memory_name="memory", user_memory_value=persona_memory,
-            user_attention_name="attention", user_attention_value=persona_attention,
-            user_reactivity_name="reactivity", user_reactivity_value=persona_reactivity,
-            task_progress_name="game_state", game_attempt_name="attempt",
-            robot_assistance_name="robot_assistance", robot_feedback_name="robot_feedback",
-
-           robot_bn_model=robot_cpds, robot_var_ass_action=["robot_assistance"],
-           robot_var_feedback_action=["robot_feedback"],
+game_performance_per_episode, react_time_per_episode, robot_assistance_per_episode = \
+simulation(bn_model_user_action=persona_action_bn_cpds, user_var_target_action=['user_action'],
+           bn_model_user_react_time=persona_react_time_bn_cpds, user_var_target_react_time=['user_react_time'],
+           user_memory_name="memory", user_memory_value=persona_memory,
+           user_attention_name="attention", user_attention_value=persona_attention,
+           user_reactivity_name="reactivity", user_reactivity_value=persona_reactivity,
+           task_progress_name="game_state", game_attempt_name="attempt",
+           robot_assistance_name="robot_assistance", robot_feedback_name="robot_feedback",
+           bn_model_robot_assistance=robot_assistance_bn_cpds, robot_var_ass_action=["robot_assistance"],
+           bn_model_robot_feedback=robot_feedback_bn_cpds, robot_var_feedback_action=["robot_feedback"],
            other_user_bn_model=real_user_cpds, other_user_var_target_action=['user_action'],
-                       other_user_var_target_react_time=["user_react_time"],
-                 other_user_memory_name="memory", other_user_memory_value=real_user_memory,
-           other_user_attention_name="attention", other_user_attention_value=real_user_attention,
-           other_user_reactivity_name="reactivity", other_user_reactivity_value=real_user_reactivity,
-           epochs=epochs, task_complexity=5)
+            other_user_var_target_react_time=["user_react_time"], other_user_memory_name="memory",
+           other_user_memory_value=real_user_memory, other_user_attention_name="attention",
+           other_user_attention_value=real_user_attention, other_user_reactivity_name="reactivity",
+           other_user_reactivity_value=real_user_reactivity, epochs=epochs, task_complexity=5)
 
 plot_game_performance_path = ""
 plot_robot_assistance_path = ""
