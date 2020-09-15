@@ -1,19 +1,12 @@
 '''this module collect all the variables involved in the bayesian network and initialise them'''
 import enum
 
-class Robot_Assistance_Feedback(enum.Enum):
-    lev_0_no = 0
-    lev_1_no = 1
-    lev_2_no = 2
-    lev_3_no = 3
-    lev_4_no = 4
-    lev_0_yes = 0
-    lev_1_yes = 1
-    lev_2_yes = 2
-    lev_3_yes = 3
-    lev_4_yes = 4
-    name = "robot_assistance_feedback"
-    counter = 10
+class User_React_time(enum.Enum):
+    slow = 0
+    normal = 1
+    fast = 1
+    name = "user_react_time"
+    counter = 3
 
 class User_Capability(enum.Enum):
     very_mild = 0
@@ -56,12 +49,13 @@ class Robot_Assistance(enum.Enum):
     lev_2 = 2
     lev_3 = 3
     lev_4 = 4
+    lev_5 = 5
     name = "robot_assistance"
-    counter = 5
+    counter = 6
 
 class Robot_Feedback(enum.Enum):
-    yes = 0
-    no = 1
+    yes = 1
+    no = 0
     name = "robot_feedback"
     counter = 2
 
