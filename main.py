@@ -60,8 +60,10 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
       game_state_counter = 0
     elif correct_move_counter > 2 and correct_move_counter <= 4:
       game_state_counter = 1
-    else:
+    elif correct_move_counter>4 and correct_move_counter<=5:
       game_state_counter = 2
+    else:
+      game_state_counter = 3
 
     next_state = (game_state_counter, attempt_counter, user_action)
 
@@ -157,12 +159,12 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
 
         #data structure to memorise the sequence of states  (state, action, next_state)
         episode = []
-        user_action = 0
+        selected_user_action = 0
         task_progress_counter = 0
         #####################SIMULATE ONE EPISODE#########################################
-        while(task_progress_counter<task_complexity):
+        while(task_progress_counter<=task_complexity):
 
-            current_state = (game_state_counter, attempt_counter, user_action)
+            current_state = (game_state_counter, attempt_counter, selected_user_action)
 
             ##################QUERY FOR THE ROBOT ASSISTANCE AND FEEDBACK##################
             vars_robot_evidence = {
@@ -276,6 +278,7 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
                             ep.point_to_index(current_robot_action, action_space),
                             ep.point_to_index(next_state, state_space)))
 
+            print("current_state ", current_state, " next_state ", next_state)
         ####################################END of EPISODE#######################################
         print("task_evolution {}, attempt_counter {}, correct_counter {}, wrong_counter {}, timeout_counter {}".format(game_state_counter, iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
         print("robot_assistance_per_action {}".format(robot_assistance_per_action))
@@ -346,7 +349,7 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
 
 #SIMULATION PARAMS
 
-epochs = 10
+epochs = 100
 
 #initialise the robot
 bn_model_robot_assistance = bnlearn.import_DAG('bn_robot_model/robot_assistive_model.bif')
