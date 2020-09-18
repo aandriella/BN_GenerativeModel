@@ -32,6 +32,7 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
         max_attempt_counter
     '''
 
+
     # if then else are necessary to classify the task game state into beg, mid, end
 
     if user_action == 1:
@@ -51,7 +52,6 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
       attempt_counter = 1
       max_attempt_counter += 1
       task_progress_counter +=1
-      correct_move_counter += 1
 
 
     # TODO call the function to compute the state of the game (beg, mid, end)
@@ -64,6 +64,7 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
       game_state_counter = 2
     else:
       game_state_counter = 3
+
 
     next_state = (game_state_counter, attempt_counter, user_action)
 
@@ -280,12 +281,14 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
 
             print("current_state ", current_state, " next_state ", next_state)
         ####################################END of EPISODE#######################################
-        print("task_evolution {}, attempt_counter {}, correct_counter {}, wrong_counter {}, timeout_counter {}".format(game_state_counter, iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
-        print("robot_assistance_per_action {}".format(robot_assistance_per_action))
-        print("attempt_counter_per_action {}".format(attempt_counter_per_action))
-        print("game_state_counter_per_action {}".format(game_state_counter_per_action))
-        print("robot_feedback_per_action {}".format(robot_feedback_per_action))
-        print("iter {}, correct {}, wrong {}, timeout {}".format(iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
+        print("game_state_counter {}, iter_counter {}, correct_counter {}, wrong_counter {}, "
+              "timeout_counter {}, max_attempt {}".format(game_state_counter, iter_counter, correct_move_counter,
+                                                          wrong_move_counter, timeout_counter, max_attempt_counter))
+        # print("robot_assistance_per_action {}".format(robot_assistance_per_action))
+        # print("attempt_counter_per_action {}".format(attempt_counter_per_action))
+        # print("game_state_counter_per_action {}".format(game_state_counter_per_action))
+        # print("robot_feedback_per_action {}".format(robot_feedback_per_action))
+        # print("iter {}, correct {}, wrong {}, timeout {}".format(iter_counter, correct_move_counter, wrong_move_counter, timeout_counter))
 
         #save episode
         episodes.append(episode)
@@ -349,7 +352,7 @@ def simulation(bn_model_user_action, var_user_action_target_action, bn_model_use
 
 #SIMULATION PARAMS
 
-epochs = 100
+epochs = 10
 
 #initialise the robot
 bn_model_robot_assistance = bnlearn.import_DAG('bn_robot_model/robot_assistive_model.bif')
