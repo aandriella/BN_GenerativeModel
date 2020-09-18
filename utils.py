@@ -58,7 +58,7 @@ def plot2D_assistance(save_path, n_episodes, *y):
     plt.legend()
     # Custom X axis
     plt.xticks(r, x, fontweight='bold')
-    plt.ylabel("performance")
+    plt.ylabel("assistance")
     plt.savefig(save_path)
     plt.show()
 
@@ -79,6 +79,6 @@ def plot2D_feedback(save_path, n_episodes, *y):
     plt.legend()
     # Custom X axis
     plt.xticks(r, x, fontweight='bold')
-    plt.ylabel("performance")
+    plt.ylabel("feedback")
     plt.savefig(save_path)
     plt.show()
