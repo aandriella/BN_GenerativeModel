@@ -43,20 +43,20 @@ class Attention(enum.Enum):
     name = "attention"
     counter = 3
 
-class Robot_Assistance(enum.Enum):
+class Agent_Assistance(enum.Enum):
     lev_0 = 0
     lev_1 = 1
     lev_2 = 2
     lev_3 = 3
     lev_4 = 4
     lev_5 = 5
-    name = "robot_assistance"
+    name = "agent_assistance"
     counter = 6
 
-class Robot_Feedback(enum.Enum):
+class Agent_Feedback(enum.Enum):
     yes = 1
     no = 0
-    name = "robot_feedback"
+    name = "agent_feedback"
     counter = 2
 
 class Game_State(enum.Enum):
@@ -73,6 +73,8 @@ class Attempt(enum.Enum):
     at_4 = 3
     name = "attempt"
     counter = 4
+
+
 
 #test the module
 
