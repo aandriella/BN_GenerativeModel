@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import pickle
 
 def plot2D_game_performance(save_path, n_episodes, *y):
     # The position of the bars on the x-axis
@@ -82,3 +82,9 @@ def plot2D_feedback(save_path, n_episodes, *y):
     plt.ylabel("feedback")
     plt.savefig(save_path)
     plt.show()
+
+def read_user_statistics_from_pickle(file_name):
+    # Getting back the objects:
+    with open(file_name, 'rb') as handle:
+        bn_dict_vars = pickle.load(handle)
+    return bn_dict_vars
