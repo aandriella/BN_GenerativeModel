@@ -1,6 +1,8 @@
 import bnlearn
 import numpy as np
 import random
+import os
+import utils
 
 '''Father class in which the basic functionalities to call the bnlearn library are developed
 This class can be used to implement individual Persona simulator or just generative models starting from 
@@ -23,6 +25,7 @@ def get_cpdf(dag_cpds, variable):
             return index, (cpds_table[index].values)
             break
         index += 1
+    return None, None
 
 def compute_prob(cpds_table):
     '''
@@ -127,7 +130,7 @@ def get_stochastic_action(actions_distr_prob):
         Return the index of the most closest value in values to target
         Args:
             target: the target value
-            values: a list of values from 0 to 1
+            values: a list of values from 0 to 1a
         Return:
              return the index of the value closer to target
         '''
@@ -212,4 +215,54 @@ def interpret_action_output(action_id, col, row, targets):
         robot_feedback = int(action_id / row)
         print("robot_feed ", robot_assistance, 'robot_ass ', robot_feedback)
         return robot_assistance, robot_feedback
+
+def update_episodes_batch(bn_model_user_action, bn_model_user_react_time,
+                          bn_model_agent_assistance, bn_model_agent_feedback,
+                          folder_filename, with_caregiver=True, with_feedback=True):
+    bn_belief_user_action_file = "bn_belief_user_action.pkl"
+    bn_belief_user_react_time_file = "bn_belief_user_react_time.pkl"
+    bn_belief_agent_assistance_file = ""; bn_belief_agent_feedback_file = "";
+    if with_caregiver and with_feedback:
+        bn_belief_agent_assistance_file = "bn_belief_caregiver_assistive_action.pkl"
+        bn_belief_agent_feedback_file = "bn_belief_caregiver_feedback_action.pkl"
+    elif with_caregiver and not with_feedback:
+        bn_belief_agent_assistance_file = "bn_belief_caregiver_assistive_action.pkl"
+        bn_belief_agent_feedback_file = ""
+    elif not with_caregiver and with_feedback:
+        bn_belief_agent_assistance_file = "bn_belief_robot_assistive_action.pkl"
+        bn_belief_agent_feedback_file = ""
+    else:
+        bn_belief_agent_assistance_file = "bn_belief_robot_assistive_action.pkl"
+        bn_belief_agent_feedback_file = "bn_belief_robot_feedback_action.pkl"
+
+    #check if the folder is empty
+    dir = os.listdir(path=folder_filename)
+    if dir==[]:
+        assert "Folder is empty"
+        return
+    else:
+        dir_list = next(os.walk(folder_filename))[1]
+        for sub_folder in dir_list:
+            #read the files in it (we already know their name)
+            bn_belief_user_action = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_user_action_file)
+            bn_belief_user_react_time = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_user_react_time_file)
+            bn_belief_agent_assistance = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_agent_assistance_file)
+            bn_belief_agent_feedback = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_agent_feedback_file)
+            bn_model_user_action = update_cpds_tables(bn_model=bn_model_user_action,
+                                                      variables_tables=bn_belief_user_action)
+            bn_model_user_react_time = update_cpds_tables(bn_model=bn_model_user_react_time,
+                                                      variables_tables=bn_belief_user_react_time)
+            bn_model_agent_assistance = update_cpds_tables(bn_model=bn_model_agent_assistance,
+                                                      variables_tables=bn_belief_agent_assistance)
+            bn_model_agent_feedback = update_cpds_tables(bn_model=bn_model_agent_feedback,
+                                                      variables_tables=bn_belief_agent_feedback)
+    #return the 4 models
+    return bn_model_user_action, bn_model_user_react_time, bn_model_agent_assistance, bn_model_agent_feedback
+
+# bn_model_caregiver_assistance = bnlearn.import_DAG('bn_agent_model/agent_assistive_model.bif')
+# bn_model_caregiver_feedback = bnlearn.import_DAG('bn_agent_model/agent_feedback_model.bif')
+# bn_model_user_action = bnlearn.import_DAG('bn_persona_model/user_action_model.bif')
+# bn_model_user_react_time = bnlearn.import_DAG('bn_persona_model/user_react_time_model.bif')
+# update_episodes_batch(bn_model_user_action, bn_model_user_react_time, bn_model_caregiver_assistance,
+#                       bn_model_caregiver_feedback, folder_filename="/home/pal/carf_ws/src/carf/caregiver_in_the_loop/log/0/")
 
