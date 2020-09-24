@@ -218,22 +218,17 @@ def interpret_action_output(action_id, col, row, targets):
 
 def update_episodes_batch(bn_model_user_action, bn_model_user_react_time,
                           bn_model_agent_assistance, bn_model_agent_feedback,
-                          folder_filename, with_caregiver=True, with_feedback=True):
+                          folder_filename, with_caregiver=True):
     bn_belief_user_action_file = "bn_belief_user_action.pkl"
     bn_belief_user_react_time_file = "bn_belief_user_react_time.pkl"
     bn_belief_agent_assistance_file = ""; bn_belief_agent_feedback_file = "";
-    if with_caregiver and with_feedback:
+    if with_caregiver:
         bn_belief_agent_assistance_file = "bn_belief_caregiver_assistive_action.pkl"
         bn_belief_agent_feedback_file = "bn_belief_caregiver_feedback_action.pkl"
-    elif with_caregiver and not with_feedback:
-        bn_belief_agent_assistance_file = "bn_belief_caregiver_assistive_action.pkl"
-        bn_belief_agent_feedback_file = ""
-    elif not with_caregiver and with_feedback:
-        bn_belief_agent_assistance_file = "bn_belief_robot_assistive_action.pkl"
-        bn_belief_agent_feedback_file = ""
-    else:
+    elif not with_caregiver:
         bn_belief_agent_assistance_file = "bn_belief_robot_assistive_action.pkl"
         bn_belief_agent_feedback_file = "bn_belief_robot_feedback_action.pkl"
+
 
     #check if the folder is empty
     dir = os.listdir(path=folder_filename)
@@ -247,15 +242,18 @@ def update_episodes_batch(bn_model_user_action, bn_model_user_react_time,
             bn_belief_user_action = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_user_action_file)
             bn_belief_user_react_time = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_user_react_time_file)
             bn_belief_agent_assistance = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_agent_assistance_file)
-            bn_belief_agent_feedback = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_agent_feedback_file)
+            if bn_model_agent_feedback != None:
+                bn_belief_agent_feedback = utils.read_user_statistics_from_pickle(folder_filename+"/"+sub_folder+"/"+bn_belief_agent_feedback_file)
+                bn_model_agent_feedback = update_cpds_tables(bn_model=bn_model_agent_feedback,
+                                                             variables_tables=bn_belief_agent_feedback)
+
             bn_model_user_action = update_cpds_tables(bn_model=bn_model_user_action,
                                                       variables_tables=bn_belief_user_action)
             bn_model_user_react_time = update_cpds_tables(bn_model=bn_model_user_react_time,
                                                       variables_tables=bn_belief_user_react_time)
             bn_model_agent_assistance = update_cpds_tables(bn_model=bn_model_agent_assistance,
                                                       variables_tables=bn_belief_agent_assistance)
-            bn_model_agent_feedback = update_cpds_tables(bn_model=bn_model_agent_feedback,
-                                                      variables_tables=bn_belief_agent_feedback)
+
     #return the 4 models
     return bn_model_user_action, bn_model_user_react_time, bn_model_agent_assistance, bn_model_agent_feedback
 
@@ -264,5 +262,6 @@ def update_episodes_batch(bn_model_user_action, bn_model_user_react_time,
 # bn_model_user_action = bnlearn.import_DAG('bn_persona_model/user_action_model.bif')
 # bn_model_user_react_time = bnlearn.import_DAG('bn_persona_model/user_react_time_model.bif')
 # update_episodes_batch(bn_model_user_action, bn_model_user_react_time, bn_model_caregiver_assistance,
-#                       bn_model_caregiver_feedback, folder_filename="/home/pal/carf_ws/src/carf/caregiver_in_the_loop/log/0/")
+#                       bn_model_caregiver_feedback, folder_filename="/home/pal/carf_ws/src/carf/caregiver_in_the_loop/log/1/0",
+#                       with_caregiver=True, with_feedback=False)
 
