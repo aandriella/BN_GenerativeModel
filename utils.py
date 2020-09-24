@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-def plot2D_game_performance(save_path, n_episodes, *y):
+def plot2D_game_performance(save_path, n_episodes, scaling_factor=1, *y):
     # The position of the bars on the x-axis
     barWidth = 0.35
-    r = np.arange(n_episodes)[1::10]  # the x locations for the groups
+    r = np.arange(n_episodes)[1::scaling_factor]  # the x locations for the groups
     # Get values from the group and categories
-    x = [i for i in range(n_episodes)][1::10]
-    correct = list(map(lambda x:x[0], y[0]))[1::10]
-    wrong = list(map(lambda x:x[1], y[0]))[1::10]
-    timeout = list(map(lambda x:x[2], y[0]))[1::10]
-    max_attempt = list(map(lambda x:x[3], y[0]))[1::10]
+    x = [i for i in range(n_episodes)][1::scaling_factor]
+    correct = list(map(lambda x:x[0], y[0]))[1::scaling_factor]
+    wrong = list(map(lambda x:x[1], y[0]))[1::scaling_factor]
+    timeout = list(map(lambda x:x[2], y[0]))[1::scaling_factor]
+    max_attempt = list(map(lambda x:x[3], y[0]))[1::scaling_factor]
 
     # plot bars
     plt.figure(figsize=(10, 7))
@@ -30,18 +30,19 @@ def plot2D_game_performance(save_path, n_episodes, *y):
     plt.show()
 
 
-def plot2D_assistance(save_path, n_episodes, *y):
+def plot2D_assistance(save_path, n_episodes, scaling_factor=1, *y):
     # The position of the bars on the x-axis
     barWidth = 0.35
-    r = np.arange(n_episodes)[1::10]  # the x locations for the groups
+    r = np.arange(n_episodes)[1::scaling_factor]
+    # the x locations for the groups
     # Get values from the group and categories
-    x = [i for i in range(n_episodes)][1::10]
+    x = [i for i in range(n_episodes)][1::scaling_factor]
 
-    lev_0 = list(map(lambda x:x[0], y[0]))[1::10]
-    lev_1 = list(map(lambda x:x[1], y[0]))[1::10]
-    lev_2 = list(map(lambda x:x[2], y[0]))[1::10]
-    lev_3 = list(map(lambda x:x[3], y[0]))[1::10]
-    lev_4 = list(map(lambda x:x[4], y[0]))[1::10]
+    lev_0 = list(map(lambda x:x[0], y[0]))[1::scaling_factor]
+    lev_1 = list(map(lambda x:x[1], y[0]))[1::scaling_factor]
+    lev_2 = list(map(lambda x:x[2], y[0]))[1::scaling_factor]
+    lev_3 = list(map(lambda x:x[3], y[0]))[1::scaling_factor]
+    lev_4 = list(map(lambda x:x[4], y[0]))[1::scaling_factor]
 
     # plot bars
     plt.figure(figsize=(10, 7))
@@ -62,15 +63,15 @@ def plot2D_assistance(save_path, n_episodes, *y):
     plt.savefig(save_path)
     plt.show()
 
-def plot2D_feedback(save_path, n_episodes, *y):
+def plot2D_feedback(save_path, n_episodes, scaling_factor=1, *y):
     # The position of the bars on the x-axis
     barWidth = 0.35
-    r = np.arange(n_episodes)[1::10]  # the x locations for the groups
+    r = np.arange(n_episodes)[1::scaling_factor]  # the x locations for the groups
     # Get values from the group and categories
-    x = [i for i in range(n_episodes)][1::10]
+    x = [i for i in range(n_episodes)][1::scaling_factor]
 
-    feedback_no = list(map(lambda x:x[0], y[0]))[1::10]
-    feedback_yes = list(map(lambda x:x[1], y[0]))[1::10]
+    feedback_no = list(map(lambda x:x[0], y[0]))[1::scaling_factor]
+    feedback_yes = list(map(lambda x:x[1], y[0]))[1::scaling_factor]
 
     # plot bars
     plt.figure(figsize=(10, 7))
