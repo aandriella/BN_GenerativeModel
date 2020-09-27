@@ -1,0 +1,162 @@
+network persona_model {
+}
+
+%VARIABLES DEFINITION
+
+variable robot_assistance {
+  type discrete [ 6 ] { lev_0, lev_1, lev_2, lev_3, lev_4, lev_5 };
+}
+variable attempt_t0 {
+  type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
+}
+variable game_state_t0 {
+  type discrete [ 3 ] { beg, mid, end };
+}
+variable attempt_t1 {
+  type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
+}
+variable game_state_t1 {
+  type discrete [ 3 ] { beg, mid, end };
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+variable user_action {
+  type discrete [ 3 ] { correct, wrong, timeout };
+}
+
+%INDIVIDUAL PROBABILITIES DEFINITION
+probability ( robot_assistance ) {
+  table 0.17, 0.16, 0.16, 0.17, 0.17, 0.17;
+}
+probability ( game_state_t0 ) {
+  table 0.34, 0.33, 0.33;
+}
+probability ( attempt_t0 ) {
+  table 0.25, 0.25, 0.25, 0.25;
+}
+probability ( game_state_t1 ) {
+  table 0.34, 0.33, 0.33;
+}
+probability ( attempt_t1 ) {
+  table 0.25, 0.25, 0.25, 0.25;
+}
+
+probability ( user_action ) {
+  table 0.33, 0.33, 0.34;
+}
+
+probability (robot_assistance | game_state_t0, attempt_t0){
+ (beg, att_1) 0.0, 0.2, 0.2, 0.2, 0.2, 0.2;
+ (beg, att_2) 0.05, 0.15, 0.2, 0.2, 0.2, 0.2;
+ (beg, att_3) 0.1, 0.2, 0.2, 0.2, 0.2, 0.1;
+ (beg, att_4) 0.15, 0.05, 0.2, 0.2, 0.2, 0.2;
+ (mid, att_1) 0.0, 0.2, 0.2, 0.2, 0.2, 0.2;
+ (mid, att_2) 0.05, 0.15, 0.2, 0.2, 0.2, 0.2;
+ (mid, att_3) 0.1, 0.2, 0.2, 0.2, 0.2, 0.1;
+ (mid, att_4) 0.15, 0.05, 0.2, 0.2, 0.2, 0.2;
+ (end, att_1) 0.0, 0.2, 0.2, 0.2, 0.2, 0.2;
+ (end, att_2) 0.05, 0.15, 0.2, 0.2, 0.2, 0.2;
+ (end, att_3) 0.1, 0.2, 0.2, 0.2, 0.2, 0.1;
+ (end, att_4) 0.15, 0.05, 0.2, 0.2, 0.2, 0.2;
+}
+
+
+
+probability (user_action | game_state_t0, attempt_t0, robot_assistance){
+  (beg, att_1, lev_0) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_0) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_0) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_0) 0.4, 0.6, 0.0;
+  (beg, att_1, lev_1) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_1) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_1) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_1) 0.4, 0.6, 0.0;
+  (beg, att_1, lev_2) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_2) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_2) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_2) 0.4, 0.6, 0.0;
+  (beg, att_1, lev_3) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_3) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_3) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_3) 0.4, 0.6, 0.0;
+  (beg, att_1, lev_4) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_4) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_4) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_4) 0.4, 0.6, 0.0;
+  (beg, att_1, lev_5) 0.1, 0.9, 0.0;
+  (beg, att_2, lev_5) 0.2, 0.8, 0.0;
+  (beg, att_3, lev_5) 0.3, 0.7, 0.0;
+  (beg, att_4, lev_5) 0.4, 0.6, 0.0;
+
+  (mid, att_1, lev_0) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_0) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_0) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_0) 0.4, 0.6, 0.0;
+  (mid, att_1, lev_1) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_1) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_1) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_1) 0.4, 0.6, 0.0;
+  (mid, att_1, lev_2) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_2) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_2) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_2) 0.4, 0.6, 0.0;
+  (mid, att_1, lev_3) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_3) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_3) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_3) 0.4, 0.6, 0.0;
+  (mid, att_1, lev_4) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_4) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_4) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_4) 0.4, 0.6, 0.0;
+  (mid, att_1, lev_5) 0.1, 0.9, 0.0;
+  (mid, att_2, lev_5) 0.2, 0.8, 0.0;
+  (mid, att_3, lev_5) 0.3, 0.7, 0.0;
+  (mid, att_4, lev_5) 0.4, 0.6, 0.0;
+
+  (end, att_1, lev_0) 0.1, 0.9, 0.0;
+  (end, att_2, lev_0) 0.2, 0.8, 0.0;
+  (end, att_3, lev_0) 0.2, 0.8, 0.0;
+  (end, att_4, lev_0) 0.4, 0.6, 0.0;
+  (end, att_1, lev_1) 0.1, 0.9, 0.0;
+  (end, att_2, lev_1) 0.2, 0.8, 0.0;
+  (end, att_3, lev_1) 0.4, 0.6, 0.0;
+  (end, att_4, lev_1) 0.4, 0.6, 0.0;
+  (end, att_1, lev_2) 0.1, 0.9, 0.0;
+  (end, att_2, lev_2) 0.2, 0.8, 0.0;
+  (end, att_3, lev_2) 0.4, 0.6, 0.0;
+  (end, att_4, lev_2) 0.4, 0.6, 0.0;
+  (end, att_1, lev_3) 0.1, 0.9, 0.0;
+  (end, att_2, lev_3) 0.2, 0.8, 0.0;
+  (end, att_3, lev_3) 0.5, 0.5, 0.0;
+  (end, att_4, lev_3) 0.4, 0.6, 0.0;
+  (end, att_1, lev_4) 0.1, 0.9, 0.0;
+  (end, att_2, lev_4) 0.2, 0.8, 0.0;
+  (end, att_3, lev_4) 0.7, 0.3, 0.0;
+  (end, att_4, lev_4) 0.4, 0.6, 0.0;
+  (end, att_1, lev_5) 0.1, 0.9, 0.0;
+  (end, att_2, lev_5) 0.2, 0.8, 0.0;
+  (end, att_3, lev_5) 0.3, 0.7, 0.0;
+  (end, att_4, lev_5) 0.4, 0.6, 0.0;
+
+}
+
+
+probability (game_state_t1 | user_action)  {
+   (correct) 0.2, 0.3, 0.5;
+   (wrong) 0.5, 0.3, 0.2;
+   (timeout) 0.33, 0.34, 0.33;
+}
+probability (attempt_t1 | user_action)  {
+   (correct) 0.1, 0.2, 0.3, 0.4;
+   (wrong) 0.4, 0.3, 0.2, 0.1;
+   (timeout) 0.25, 0.25, 0.25, 0.25;
+}
+
+
+probability (user_action | robot_assistance){
+  (lev_0) 0.1, 0.6, 0.3;
+  (lev_1) 0.2, 0.5, 0.3;
+  (lev_2) 0.3, 0.5, 0.2;
+  (lev_3) 0.5, 0.3, 0.2;
+  (lev_4) 0.9, 0.1, 0.0;
+  (lev_5) 0.9, 0.1, 0.0;
+}
