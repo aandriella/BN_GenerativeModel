@@ -44,12 +44,35 @@ def compute_prob(cpds_table):
     This function checks if any 
     '''
 
-    for val in range(len(cpds_table)):
-            cpds_table[val] = list(map(lambda x: x / (sum(cpds_table[val])+0.00001), cpds_table[val]))
-            cpds_table[val] = check_zero_occurrences(cpds_table[val])
+    cpds_table_array = np.array(cpds_table)
+    cpds_table_array_len = cpds_table_array.shape.__len__()
+
+    if cpds_table_array_len == 4:
+
+        # attempt
+        for elem1 in range(cpds_table_array.shape[0]):
+            # game_state
+            for elem2 in range(cpds_table_array.shape[1]):
+                #assistance
+                for elem3 in range(cpds_table_array.shape[2]):
+                    cpds_table[elem1][elem2][elem3] = list(
+                    map(lambda x: x / (sum(cpds_table[elem1][elem2][elem3]) + 0.00001), cpds_table[elem1][elem2][elem3]))
+                    cpds_table[elem1][elem2][elem3] = check_zero_occurrences(cpds_table[elem1][elem2][elem3])
+
+    elif cpds_table_array_len ==3:
+        #attempt
+        for elem1 in range(cpds_table_array.shape[0]):
+            #game_state
+            for elem2 in range(cpds_table_array.shape[1]):
+                cpds_table[elem1][elem2] = list(map(lambda x: x / (sum(cpds_table[elem1][elem2]) + 0.00001), cpds_table[elem1][elem2]))
+                cpds_table[elem1][elem2] = check_zero_occurrences(cpds_table[elem1][elem2])
+    else:
+        for val in range(len(cpds_table)):
+                cpds_table[val] = list(map(lambda x: x / (sum(cpds_table[val])+0.00001), cpds_table[val]))
+                cpds_table[val] = check_zero_occurrences(cpds_table[val])
     return cpds_table
 
-def average_prob(ref_cpds_table, current_cpds_table):
+def average_prob(ref_cpds_table, current_cpds_table, alpha):
     '''
     Args:
         ref_cpds_table: table from bnlearn
@@ -58,12 +81,13 @@ def average_prob(ref_cpds_table, current_cpds_table):
         avg from both tables
     '''
     res_cpds_table = ref_cpds_table.copy()
+    current_cpds_table_np_array = np.array(current_cpds_table)
     for elem1 in range(len(ref_cpds_table)):
         for elem2 in range(len(ref_cpds_table[0])):
-            res_cpds_table[elem1][elem2] = (ref_cpds_table[elem1][elem2]+current_cpds_table[elem1][elem2])/2
+            res_cpds_table[elem1][elem2] = (ref_cpds_table[elem1][elem2]*(1-alpha))+(current_cpds_table_np_array[elem1][elem2]*alpha)
     return res_cpds_table
 
-def update_cpds_tables(bn_model, variables_tables):
+def update_cpds_tables(bn_model, variables_tables, alpha=0.1):
     '''
     This function updates the bn model with the variables_tables provided in input
     Args:
@@ -80,7 +104,7 @@ def update_cpds_tables(bn_model, variables_tables):
         cpds_table_from_counter = compute_prob(val)
         updated_prob = average_prob(
             np.transpose(cpds_table),
-            cpds_table_from_counter)
+            cpds_table_from_counter, alpha)
         bn_model['model'].cpds[index].values = np.transpose(updated_prob)
 
     return bn_model

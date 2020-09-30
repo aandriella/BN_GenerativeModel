@@ -43,6 +43,7 @@ def plot2D_assistance(save_path, n_episodes, scaling_factor=1, *y):
     lev_2 = list(map(lambda x:x[2], y[0]))[1::scaling_factor]
     lev_3 = list(map(lambda x:x[3], y[0]))[1::scaling_factor]
     lev_4 = list(map(lambda x:x[4], y[0]))[1::scaling_factor]
+    lev_5 = list(map(lambda x:x[5], y[0]))[1::scaling_factor]
 
     # plot bars
     plt.figure(figsize=(10, 7))
@@ -54,7 +55,8 @@ def plot2D_assistance(save_path, n_episodes, scaling_factor=1, *y):
             width=barWidth, label='lev_3')
     plt.bar(r, lev_4, bottom=np.array(lev_0) + np.array(lev_1)+ np.array(lev_2)+ np.array(lev_3), edgecolor='white',
             width=barWidth, label='lev_4')
-
+    plt.bar(r, lev_5, bottom=np.array(lev_0) + np.array(lev_1) + np.array(lev_2) + np.array(lev_3)+ np.array(lev_4), edgecolor='white',
+            width=barWidth, label='lev_5')
 
     plt.legend()
     # Custom X axis
