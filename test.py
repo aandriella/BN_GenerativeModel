@@ -7,35 +7,47 @@ def import_data_from_csv(csv_filename, dag_filename):
     print("Init model")
     DAG = bn.import_DAG(dag_filename)
     df_caregiver = bn.sampling(DAG, n= 10000)
+
     print("/************************************************************/")
     print("real_user Model")
-    DAG_ = bn.import_DAG(dag_filename, CPD=False)
+    DAG_real_user_no_cpd = bn.import_DAG(dag_filename, CPD=False)
     df_real_user = pd.read_csv(csv_filename)
-    DAG_real_user = bn.parameter_learning.fit(DAG_, df_real_user, methodtype='bayes')
+    DAG_real_user = bn.parameter_learning.fit(DAG_real_user_no_cpd, df_real_user, methodtype='bayes')
     df_real_user = bn.sampling(DAG_real_user, n=10000)
     print("/************************************************************/")
     print("Shared knowledge")
-    DAG_ = bn.import_DAG(dag_filename, CPD=False)
+    DAG_shared_no_cpd = bn.import_DAG(dag_filename, CPD=False)
     shared_knowledge = [df_real_user, df_caregiver]
     conc_shared_knowledge = pd.concat(shared_knowledge)
-    DAG_shared = bn.parameter_learning.fit(DAG_, conc_shared_knowledge)
+    DAG_shared = bn.parameter_learning.fit(DAG_shared_no_cpd, conc_shared_knowledge)
     df_conc_shared_knowledge = bn.sampling(DAG_shared, n=10000)
     return DAG_shared
 
 
 
-import_data_from_csv(csv_filename='bn_persona_model/cognitive_game.csv', dag_filename='bn_persona_model/persona_model_test.bif')
+DAG_shared = import_data_from_csv(csv_filename='bn_persona_model/cognitive_game.csv', dag_filename='bn_persona_model/persona_model_test.bif')
+
+
 # DAG = bn.import_DAG('bn_persona_model/persona_model_test.bif')
-# G = bn.plot(DAG)
-# q1 = bn.inference.fit(DAG, variables=[ 'user_action'], evidence={
-#                                                                 'game_state': 0,
+# #G = bn.plot(DAG)
+#
+# q_origin = bn.inference.fit(DAG, variables=[ 'user_action'], evidence={
+#                                                                 'game_state':0,
+#                                                                 'attempt':0,
+#                                                                 'agent_feedback':0,
+#                                                                 'agent_assistance':0,
+# })
+
+# q_shared = bn.inference.fit(DAG_shared, variables=[ 'user_action'], evidence={
+#                                                                 'game_state':0,
 #                                                                 'attempt':0,
 #                                                                 'agent_feedback':1,
-#                                                                 'memory': 0,
-#                                                                 'reactivity':0,
+#                                                                 'user_memory': 2,
+#                                                                 'user_reactivity':2,
 #                                                                 'agent_assistance':0,
-#
 # })
+#
+# print("Q origin: ", q_origin.values, " Q shared ", q_shared.values)
 # df = pd.read_csv('bn_persona_model/cognitive_game.csv')
 # df = bn.sampling(DAG, n=10000)
 # #model_sl = bn.structure_learning.fit(df, methodtype='hc', scoretype='bic')
