@@ -2,13 +2,10 @@ network persona_model {
 }
 
 %VARIABLES DEFINITION
-variable reactivity {
+variable user_reactivity {
   type discrete [3] {slow, medium, fast};
 }
-variable memory {
-  type discrete[3] {low, medium, high};
-}
-variable attention {
+variable user_memory {
   type discrete[3] {low, medium, high};
 }
 variable agent_assistance {
@@ -42,36 +39,27 @@ probability ( user_action ) {
   table 0.33, 0.33, 0.34;
 }
 #CPDS 4 #SPECIFICALLY FOR THE GIVEN PATIENT
-probability ( reactivity ) {
+probability ( user_reactivity ) {
   table 0.34, 0.33, 0.33;
 }
 #CPDS 3 #SPECIFICALLY FOR THE GIVEN PATIENT
-probability ( memory ) {
-  table 0.33, 0.33, 0.34;
-}
-#CPDS 1 #SPECIFICALLY FOR THE GIVEN PATIENT
-probability ( attention ) {
+probability ( user_memory ) {
   table 0.33, 0.33, 0.34;
 }
 probability ( agent_feedback ) {
   table 0.5, 0.5;
 }
 
-probability ( reactivity | attention ) {
-  (low) 0.7, 0.2, 0.1;
-  (medium)  0.2, 0.5, 0.3;
-  (high)  0.1, 0.2, 0.7;
-}
 
-probability (user_action | memory, reactivity) {
-(low, slow)  0.2, 0.5, 0.3;
-(low, medium) 0.3, 0.5, 0.2;
-(low, fast) 0.4, 0.5, 0.1;
-(medium, slow) 0.5, 0.3, 0.2;
-(medium, medium) 0.55, 0.35, 0.1;
-(medium, fast) 0.6, 0.4, 0.0;
-(high, slow)  0.5, 0.4, 0.1;
-(high, medium) 0.6, 0.3, 0.1;
+probability (user_action | user_memory, user_reactivity) {
+(low, slow)  0.2, 0.2, 0.6;
+(low, medium) 0.3, 0.2, 0.5;
+(low, fast) 0.4, 0.4, 0.2;
+(medium, slow) 0.3, 0.1, 0.6;
+(medium, medium) 0.4, 0.2, 0.4;
+(medium, fast) 0.6, 0.2, 0.2;
+(high, slow)  0.7, 0.1, 0.2;
+(high, medium) 0.8, 0.1, 0.1;
 (high, fast) 0.8, 0.2, 0.0;
 }
 probability (agent_feedback | user_action) {
