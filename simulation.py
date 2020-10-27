@@ -34,14 +34,13 @@ def build_model_from_data(csv_filename, dag_filename, dag_model=None):
 
 def generate_agent_assistance(preferred_assistance, agent_behaviour, current_state, state_space, action_space):
     episode = Episode()
-    game_state, attempt, prev_user_outcome = episode.state_from_index_to_point(state_space, current_state)
+    game_state, attempt, prev_user_action = episode.state_from_index_to_point(state_space, current_state)
     robot_action = 0
     #agent_behaviour is a tuple first item is the feedback, second item is the robot assistance
-    print(game_state,attempt, prev_user_outcome)
+    print(game_state,attempt, prev_user_action)
     if attempt == 1:
-        robot_action = episode.state_from_point_to_index(action_space,
-                                                                        (random.randint(0, 1), 0))
-    elif attempt!=1 and prev_user_outcome == 0:
+        robot_action = episode.state_from_point_to_index(action_space, (random.randint(0, 1), 0))
+    elif attempt!=1 and prev_user_action == 0:
         if attempt == 2 and agent_behaviour == "challenge":
             robot_action = episode.state_from_point_to_index(action_space,
             (random.randint(0,1),min(max(0, preferred_assistance-1), 5)))
@@ -67,7 +66,7 @@ def generate_agent_assistance(preferred_assistance, agent_behaviour, current_sta
             (random.randint(0, 1), min(max(0, preferred_assistance+2), 5)))
             print("hatt4")
 
-    elif attempt!=1 and prev_user_outcome == -1:
+    elif attempt!=1 and prev_user_action == -1:
         if attempt == 2 and agent_behaviour == "challenge":
             robot_action = episode.state_from_point_to_index(action_space,
             (random.randint(0, 1), min(max(0, preferred_assistance+1), 5)))
@@ -93,9 +92,9 @@ def generate_agent_assistance(preferred_assistance, agent_behaviour, current_sta
             (random.randint(0, 1), min(max(0, preferred_assistance-3), 5)))
             print("hatt4")
 
-    agent_feedback, agent_assistance = episode.state_from_index_to_point(action_space, robot_action)
+    agent_assistance = episode.state_from_index_to_point(action_space, robot_action)
 
-    return agent_feedback, agent_assistance
+    return agent_assistance
 
 
 
@@ -134,16 +133,16 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
 
     # if then else are necessary to classify the task game state into beg, mid, end
 
-    if user_action == 1 and game_state_counter<3:
+    if user_action == 0 and game_state_counter<3:
         attempt_counter = 1
         correct_move_counter += 1
         task_progress_counter += 1
     # if the user made a wrong move and still did not reach the maximum number of attempts
-    elif user_action == -1 and attempt_counter < max_attempt_per_object and game_state_counter<3:
+    elif user_action == 1 and attempt_counter < max_attempt_per_object and game_state_counter<3:
         attempt_counter += 1
         wrong_move_counter += 1
     # if the user did not move any token and still did not reach the maximum number of attempts
-    elif user_action == 0 and attempt_counter < max_attempt_per_object and game_state_counter<3:
+    elif user_action == 2 and attempt_counter < max_attempt_per_object and game_state_counter<3:
         attempt_counter += 1
         timeout_counter += 1
     # the agent or therapist makes the correct move on the patient's behalf
@@ -167,8 +166,24 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
     return next_state, task_progress_counter, game_state_counter, attempt_counter, correct_move_counter, wrong_move_counter, timeout_counter, max_attempt_counter
 
 
+def select_agent_action(agent_action, epsilon):
+    '''
+    Args:
+        agent_action: list of possible actions with their probabilities
+    Return:
+        one of the agent's actions
+    '''
 
-def simulation(bn_model_user_action, var_user_action_target_action,
+    if random.random()>epsilon:
+        return np.argmax(agent_action)
+    else:
+        agent_action[np.argmax(agent_action)]=0
+        return  np.argmax(agent_action)
+
+def simulation(bn_model_user_action,
+               bn_model_agent_behaviour,
+               var_user_action_target_action,
+               var_agent_behaviour_target_action,
                game_state_bn_name, attempt_bn_name,
                agent_assistance_bn_name, agent_feedback_bn_name,
                user_pref_assistance,
@@ -186,14 +201,14 @@ def simulation(bn_model_user_action, var_user_action_target_action,
 
     '''
 
-    user_action_per_robot_feedback_robot_assistance = [[[0 for i in range(User_Action.counter.value)]
-                                                           for j in range(Agent_Assistance.counter.value)]
-                                                           for l in range(Agent_Feedback.counter.value)
-                                                        ]
-    attempt_counter_per_user_action = [[0 for i in range(Attempt.counter.value)] for j in
-                                       range(User_Action.counter.value)]
-    game_state_counter_per_user_action = [[0 for i in range(Game_State.counter.value)] for j in
-                                          range(User_Action.counter.value)]
+    # user_action_per_robot_feedback_robot_assistance = [[[0 for i in range(User_Action.counter.value)]
+    #                                                        for j in range(Agent_Assistance.counter.value)]
+    #                                                        for l in range(Agent_Feedback.counter.value)
+    #                                                     ]
+    # attempt_counter_per_user_action = [[0 for i in range(Attempt.counter.value)] for j in
+    #                                    range(User_Action.counter.value)]
+    # game_state_counter_per_user_action = [[0 for i in range(Game_State.counter.value)] for j in
+    #                                       range(User_Action.counter.value)]
 
     #output variables:
     n_correct_per_episode = [0]*epochs
@@ -226,11 +241,11 @@ def simulation(bn_model_user_action, var_user_action_target_action,
         max_attempt_counter = 0
 
         #The following variables are used to update the BN at the end of the episode
-        user_action_dynamic_variables = {
-                                        'attempt': attempt_counter_per_user_action,
-                                        'game_state': game_state_counter_per_user_action,
-                                        'user_action': user_action_per_robot_feedback_robot_assistance
-                                        }
+        # user_action_dynamic_variables = {
+        #                                 'attempt': attempt_counter_per_user_action,
+        #                                 'game_state': game_state_counter_per_user_action,
+        #                                 'user_action': user_action_per_robot_feedback_robot_assistance
+        #                                 }
 
         #data structure to memorise the sequence of states  (state, action, next_state)
         episode = []
@@ -241,29 +256,40 @@ def simulation(bn_model_user_action, var_user_action_target_action,
 
             current_state = (game_state_counter, attempt_counter, selected_user_action)
             current_state_index = ep.state_from_point_to_index(state_space, current_state)
-            if agent_policy==[]:
-                selected_agent_feedback_action, selected_agent_assistance_action = \
-                    generate_agent_assistance(preferred_assistance=user_pref_assistance,
-                                              agent_behaviour=agent_behaviour,
-                                              current_state=current_state_index,
-                                              state_space=state_space,
-                                              action_space=action_space
-                                              )
-            else:
-                selected_agent_feedback_action, selected_agent_assistance_action = ep.state_from_index_to_point(action_space, agent_policy[current_state_index])
+            # if agent_policy==[]:
+            #     selected_agent_feedback_action, selected_agent_assistance_action = \
+            #         generate_agent_assistance(preferred_assistance=user_pref_assistance,
+            #                                   agent_behaviour=agent_behaviour,
+            #                                   current_state=current_state_index,
+            #                                   state_space=state_space,
+            #                                   action_space=action_space
+            #                                   )
+            # else:
+            #     #TODO agent_policy is a list of 12 items
+            #     # select the one with the highest probability 1-epsilon of the times and one of the others epsilon times
+            #
+            #     selected_agent_feedback_action, selected_agent_assistance_action = ep.state_from_index_to_point(action_space, select_agent_action(agent_policy[current_state_index], epsilon=0.1))
 
+            vars_agent_evidence = {game_state_bn_name: game_state_counter,
+                                  attempt_bn_name: attempt_counter - 1,
+                                  }
+
+            query_agent_behaviour_prob = bn_functions.infer_prob_from_state(user_bn_model=bn_model_agent_behaviour,
+                                                                        infer_variable=var_agent_behaviour_target_action,
+                                                                        evidence_variables=vars_agent_evidence)
+
+            selected_agent_behaviour_action = bn_functions.get_stochastic_action(query_agent_behaviour_prob.values)
+            #selected_agent_behaviour_action = np.argmax(query_agent_behaviour_prob.values)
 
             #counters for plots
-            n_assistance_lev_per_episode[e][selected_agent_assistance_action] += 1
-            current_agent_action = (selected_agent_feedback_action, selected_agent_assistance_action)
-            print("agent_assistance {}, agent_feedback {},  attempt {}, game {}".format(selected_agent_assistance_action, selected_agent_feedback_action, attempt_counter, game_state_counter))
+            n_assistance_lev_per_episode[e][selected_agent_behaviour_action] += 1
+            print("agent_assistance {},  attempt {}, game {}".format(selected_agent_behaviour_action, attempt_counter, game_state_counter))
 
             ##########################QUERY FOR THE USER ACTION AND REACT TIME#####################################
             #return the user action in this state based on the Persona profile
             vars_user_evidence = {    game_state_bn_name: game_state_counter,
                                       attempt_bn_name: attempt_counter - 1,
-                                      agent_assistance_bn_name: selected_agent_assistance_action,
-                                      agent_feedback_bn_name: selected_agent_feedback_action,
+                                      agent_assistance_bn_name: selected_agent_behaviour_action,
                                       }
 
             query_user_action_prob = bn_functions.infer_prob_from_state(user_bn_model=bn_model_user_action,
@@ -272,14 +298,14 @@ def simulation(bn_model_user_action, var_user_action_target_action,
 
             selected_user_action = bn_functions.get_stochastic_action(query_user_action_prob.values)
 
-            # updates counters for simulation
-            # remap user_action index
-            if selected_user_action == 0:
-              selected_user_action = 1
-            elif selected_user_action == 1:
-              selected_user_action = -1
-            else:
-              selected_user_action = 0
+            # # updates counters for simulation
+            # # remap user_action index
+            # if selected_user_action == 0:
+            #   selected_user_action = 1
+            # elif selected_user_action == 1:
+            #   selected_user_action = -1
+            # else:
+            #   selected_user_action = 0
 
             #updates counters for simulation
             iter_counter += 1
@@ -291,9 +317,15 @@ def simulation(bn_model_user_action, var_user_action_target_action,
                                                                         timeout_counter, max_attempt_counter,
                                                                         max_attempt_per_object)
 
+            # update counters
+            # if game_state_counter <= 2:
+            #     user_action_per_robot_feedback_robot_assistance[selected_agent_feedback_action][selected_agent_assistance_action][selected_user_action] += 1
+            #     attempt_counter_per_user_action[selected_user_action][attempt_counter - 1] += 1
+            #     game_state_counter_per_user_action[selected_user_action][game_state_counter] += 1
+
             # store the (state, action, next_state)
             episode.append((ep.state_from_point_to_index(state_space, current_state),
-                            ep.state_from_point_to_index(action_space, current_agent_action),
+                            selected_agent_behaviour_action,
                             ep.state_from_point_to_index(state_space, next_state)))
 
             print("current_state ", current_state, " next_state ", next_state)
@@ -305,8 +337,11 @@ def simulation(bn_model_user_action, var_user_action_target_action,
         #save episode
         episodes.append(Episode(episode))
 
+
+
         #update user models
-        bn_model_user_action = bn_functions.update_cpds_tables(bn_model_user_action, user_action_dynamic_variables, alpha_learning)
+        # bn_model_user_action = bn_functions.update_cpds_tables(bn_model_user_action, user_action_dynamic_variables, alpha_learning)
+        #
 
         #reset counter
         user_action_per_robot_feedback_robot_assistance = [[[0 for i in range(User_Action.counter.value)]
@@ -340,9 +375,7 @@ def simulation(bn_model_user_action, var_user_action_target_action,
 #############################################################################
 
 
-# agent_policy = generate_agent_assistance(preferred_assistance=2, agent_behaviour="help", n_game_state=Game_State.counter.value, n_attempt=Attempt.counter.value, alpha_action=0.1)
-# print(agent_policy)
-#
+
 # # SIMULATION PARAMS
 # epochs = 20
 # scaling_factor = 1
@@ -375,6 +408,9 @@ def simulation(bn_model_user_action, var_user_action_target_action,
 # initial_state = (1, 1, 0)
 #
 # #1. RUN THE SIMULATION WITH THE PARAMS SET BY THE CAREGIVER
+# agent_policy = generate_agent_assistance(preferred_assistance=2, agent_behaviour="help", current_state=5, state_space=states_space_list, action_space=action_space_list)
+# print(agent_policy)
+#
 #
 #
 # game_performance_per_episode, react_time_per_episode, agent_assistance_per_episode, agent_feedback_per_episode, episodes_list = \
