@@ -16,9 +16,6 @@ variable game_state {
 variable user_action {
   type discrete [ 3 ] { correct, wrong, timeout };
 }
-variable agent_feedback {
- type discrete [ 2 ] { no, yes };
-}
 
 %INDIVIDUAL PROBABILITIES DEFINITION
 
@@ -34,12 +31,6 @@ probability ( attempt ) {
 probability ( user_action ) {
   table 0.33, 0.33, 0.34;
 }
-probability ( agent_feedback ) {
-  table 0.5, 0.5;
-}
-
-
-
 probability (game_state | user_action)  {
    (correct) 0.30, 0.30, 0.4;
    (wrong) 0.35, 0.35, 0.3;
@@ -50,21 +41,11 @@ probability (attempt | user_action)  {
    (wrong) 0.4, 0.3, 0.2, 0.1;
    (timeout) 0.4, 0.3, 0.2, 0.1;
 }
-
-
-probability (user_action | agent_assistance, agent_feedback) {
-(lev_0, no) 0.05    0.85	0.1;
-(lev_1, no)	0.1     0.8		0.1;
-(lev_2, no)	0.2		0.7		0.1;
-(lev_3, no)	0.33	0.57	0.1;
-(lev_4, no)	0.9		0.1		0.0;
-(lev_5, no)	1.0		0.0		0.0;
-
-(lev_0, yes)    0.5		0.4		0.1;
-(lev_1, yes)	0.6		0.3		0.1;
-(lev_2, yes)	0.7		0.2		0.1;
-(lev_3, yes)	0.8	    0.1	    0.1;
-(lev_4, yes)	0.9		0.1		0.0;
-(lev_5, yes)	1.0		0.0		0.0;
-
+probability (user_action | agent_assistance) {
+(lev_0) 0.05    0.85	0.1;
+(lev_1)	0.1     0.8		0.1;
+(lev_2)	0.2		0.7		0.1;
+(lev_3)	0.33	0.57	0.1;
+(lev_4)	0.9		0.1		0.0;
+(lev_5)	1.0		0.0		0.0;
 }
