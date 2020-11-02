@@ -1,1 +1,1 @@
-#BN_Persona
+This is a Persona Simulator based on Bayesian Network
