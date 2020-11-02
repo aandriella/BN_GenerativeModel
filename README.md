@@ -1,1 +1,1 @@
-This is a Persona Simulator based on Bayesian Network
+Persona Simulator based on Bayesian Network
