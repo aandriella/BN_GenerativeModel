@@ -31,21 +31,3 @@ probability ( attempt ) {
 probability ( user_action ) {
   table 0.33, 0.33, 0.34;
 }
-probability (game_state | user_action)  {
-   (correct) 0.30, 0.30, 0.4;
-   (wrong) 0.35, 0.35, 0.3;
-   (timeout) 0.33, 0.33, 0.34;
-}
-probability (attempt | user_action)  {
-   (correct) 0.25, 0.25, 0.25, 0.25;
-   (wrong) 0.4, 0.3, 0.2, 0.1;
-   (timeout) 0.4, 0.3, 0.2, 0.1;
-}
-probability (user_action | agent_assistance) {
-(lev_0) 0.05    0.85	0.1;
-(lev_1)	0.1     0.8		0.1;
-(lev_2)	0.2		0.7		0.1;
-(lev_3)	0.33	0.57	0.1;
-(lev_4)	0.9		0.1		0.0;
-(lev_5)	1.0		0.0		0.0;
-}

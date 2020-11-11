@@ -1,2 +1,6 @@
 .DS_Store
 .idea/
+__pycache__/
+old_models/
+results/
+

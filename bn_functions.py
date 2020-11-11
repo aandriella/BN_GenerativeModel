@@ -178,7 +178,7 @@ def get_stochastic_action(actions_distr_prob):
         accum += actions_distr_prob[i]
         actions_distr_prob_scaled[i] = accum
 
-    rnd_val = random.uniform(0, 1)
+    rnd_val = random.random()
     action_id = compute_distance(actions_distr_prob_scaled, rnd_val)
 
     return action_id
