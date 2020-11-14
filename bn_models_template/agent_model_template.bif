@@ -1,0 +1,26 @@
+network agent_assistive_model {
+}
+
+%VARIABLES DEFINITION
+
+variable agent_assistance {
+  type discrete [ 6 ] { lev_0, lev_1, lev_2, lev_3, lev_4, lev_5};
+}
+variable attempt {
+  type discrete [ 4 ] { att_1, att_2, att_3, att_4 };
+}
+variable game_state {
+  type discrete [ 3 ] { beg, mid, end };
+}
+
+
+%INDIVIDUAL PROBABILITIES DEFINITION
+probability ( agent_assistance ) {
+  table 0.17, 0.17, 0.17, 0.17, 0.16, 0.16;
+}
+probability ( game_state ) {
+  table 0.34, 0.33, 0.33;
+}
+probability ( attempt ) {
+  table 0.25, 0.25, 0.25, 0.25;
+}
