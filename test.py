@@ -82,7 +82,7 @@ print( " Q shared ", q_shared.values)
 # })
 # print("BEFORE")
 # print(q1.values)
-# df = bn.sampling(DAG_update, n=1000)
+# df = bn.sampling(DAG_update, n=1)
 # DAG_update = bn.parameter_learning.fit(DAG_update, df)
 # q1 = bn.inference.fit(DAG_update, variables=['user_action'], evidence={
 #                                                                 'game_state': 0,
@@ -92,7 +92,7 @@ print( " Q shared ", q_shared.values)
 # print("AFTER")
 # print(q1.values)
 
-#df = bn.sampling(DAG, n=1000, verbose=2)
+#df = bn.sampling(DAG, n=1, verbose=2)
 #model = bn.structure_learning.fit(df)
 #G = bn.plot(model)
 #DAGnew = bn.parameter_learning.fit(model, df, methodtype="bayes")

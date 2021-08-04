@@ -163,20 +163,37 @@ def compute_next_state(user_action, task_progress_counter, attempt_counter, corr
     return next_state, task_progress_counter, game_state_counter, attempt_counter, correct_move_counter, wrong_move_counter, timeout_counter, max_attempt_counter
 
 
-def select_agent_action(agent_action, epsilon):
+def select_agent_action(agent_action, agent_objective, epsilon):
     '''
     Args:
         agent_action: list of possible actions with their probabilities
+        epsilon: probability at which the agent selects a non optimal action
+        objective: it can be, None, challenge, and help
     Return:
         one of the agent's actions
     '''
 
-    if random.random()>epsilon:
-        return np.argmax(agent_action)
+    if agent_objective == "help":
+        if random.random() < epsilon:
+            return np.argmax(agent_action)
+        else:
+            agent_best_action = np.argmax(agent_action)
+            agent_help_action = min(5, agent_best_action+1)
+        return agent_help_action
+    elif agent_objective == "challenge":
+        if random.random() < epsilon:
+            return np.argmax(agent_action)
+        else:
+            agent_best_action = np.argmax(agent_action)
+            agent_challenge_action = max(0, agent_best_action-1)
+            return agent_challenge_action
     else:
-        agent_action_rm_best = agent_action[:]
-        agent_action_rm_best[np.argmax(agent_action)] = 0
-        return np.argmax(agent_action_rm_best)
+        if random.random() > epsilon:
+            return np.argmax(agent_action)
+        else:
+            agent_action_rm_best = agent_action[:]
+            agent_action_rm_best[np.argmax(agent_action)] = 0
+            return np.argmax(agent_action_rm_best)
 
 def simulation(bn_model_user_action,
                bn_model_agent_behaviour,
@@ -185,8 +202,10 @@ def simulation(bn_model_user_action,
                game_state_bn_name, attempt_bn_name,
                agent_assistance_bn_name,
                agent_policy,
-               state_space, action_space,
-               epoch=50,  run = 50, task_complexity=5, max_attempt_per_object=4, alpha_learning=0):
+               agent_objective,
+               epsilon,
+               state_space,
+               epoch=50,  run = 50, task_complexity=5, max_attempt_per_object=4):
     '''
     Args:
 
@@ -229,7 +248,7 @@ def simulation(bn_model_user_action,
         n_timeout_per_episode_run = [0] * run
         n_max_attempt_per_episode_run = [0] * run
         game_performance_episode_run = [0] * run
-        n_assistance_lev_per_episode_run = [[0 for i in range(Agent_Assistance.counter.value)] for j in range(run)]
+        n_assistance_lev_per_episode_run = [[0 for i in range(Agent_Assistance.counter.value+1)] for j in range(run)]
 
         for r in range(run):
 
@@ -271,9 +290,9 @@ def simulation(bn_model_user_action,
                                                                                 evidence_variables=vars_agent_evidence)
 
                     #selected_agent_behaviour_action = bn_functions.get_stochastic_action(query_agent_behaviour_prob.values)
-                    selected_agent_behaviour_action = select_agent_action(query_agent_behaviour_prob.values, epsilon=0.2)
+                    selected_agent_behaviour_action = select_agent_action(query_agent_behaviour_prob.values, agent_objective=agent_objective, epsilon=epsilon)
                 else:
-                    selected_agent_behaviour_action = select_agent_action(agent_policy[current_state_index], epsilon=0.2)
+                    selected_agent_behaviour_action = select_agent_action(agent_policy[current_state_index], agent_objective=agent_objective, epsilon=epsilon)
                     #selected_agent_behaviour_action = bn_functions.get_stochastic_action(agent_policy[current_state_index])
                     #selected_agent_behaviour_action =np.argmax(agent_policy[current_state_index])
 
@@ -321,6 +340,7 @@ def simulation(bn_model_user_action,
             print("game_state_counter {}, iter_counter {}, correct_counter {}, wrong_counter {}, "
                   "timeout_counter {}, max_attempt {}".format(game_state_counter, iter_counter, correct_move_counter,
                                                               wrong_move_counter, timeout_counter, max_attempt_counter))
+            print("Assisttance level for  episode:", n_assistance_lev_per_episode_run)
 
             #save episode
             episodes.append(Episode(episode))
